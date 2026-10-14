@@ -1,0 +1,10 @@
+{
+  "title": "Agent Credential Management",
+  "shortname": "agent-credential-management",
+  "status": "draft",
+  "audience": "external",
+  "source": "index.bs",
+  "rendered": "index.html",
+  "repository": "https://github.com/nicksteele-oai/draft-credential-management-api",
+  "editor": "Nick Steele"
+}

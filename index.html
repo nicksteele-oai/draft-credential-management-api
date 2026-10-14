@@ -1,0 +1,2514 @@
+<!doctype html><html lang="en">
+ <head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  <title>Agent Credential Management</title>
+  <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+<style data-fill-with="stylesheet">/******************************************************************************
+ *                   Style sheet for the W3C specifications                   *
+ *
+ * Special classes handled by this style sheet include:
+ *
+ * Indices
+ *   - .toc for the Table of Contents (<ol class="toc">)
+ *     + <span class="secno"> for the section numbers
+ *   - #toc for the Table of Contents (<nav id="toc">)
+ *   - ul.index for Indices (<a href="#ref">term</a><span>, in § N.M</span>)
+ *   - table.index for Index Tables (e.g. for properties or elements)
+ *
+ * Structural Markup
+ *   - table.data for general data tables
+ *     -> use 'scope' attribute, <colgroup>, <thead>, and <tbody> for best results !
+ *     -> use <table class='complex data'> for extra-complex tables
+ *     -> use <td class='long'> for paragraph-length cell content
+ *     -> use <td class='pre'> when manual line breaks/indentation would help readability
+ *   - dl.switch for switch statements
+ *   - ol.algorithm for algorithms (helps to visualize nesting)
+ *   - .figure and .caption (HTML4) and figure and figcaption (HTML5)
+ *     -> .sidefigure for right-floated figures
+ *   - ins/del
+ *     -> ins/del.c### for candidate and proposed changes (amendments)
+ *
+ * Code
+ *   - pre and code
+ *
+ * Special Sections
+ *   - .note       for informative notes             (div, p, span, aside, details)
+ *   - .example    for informative examples          (div, p, pre, span)
+ *   - .issue      for issues                        (div, p, span)
+ *   - .advisement for loud normative statements     (div, p, strong)
+ *   - .annoying-warning for spec obsoletion notices (div, aside, details)
+ *   - .correction for "candidate corrections"       (div, aside, details, section)
+ *   - .addition   for "candidate additions"         (div, aside, details, section)
+ *   - .correction.proposed for "proposed corrections" (div, aside, details, section)
+ *   - .addition.proposed   for "proposed additions"   (div, aside, details, section)
+ *
+ * Definition Boxes
+ *   - pre.def   for WebIDL definitions
+ *   - table.def for tables that define other entities (e.g. CSS properties)
+ *   - dl.def    for definition lists that define other entitles (e.g. HTML elements)
+ *
+ * Numbering
+ *   - .secno for section numbers in .toc and headings (<span class='secno'>3.2</span>)
+ *   - .marker for source-inserted example/figure/issue numbers (<span class='marker'>Issue 4</span>)
+ *   - ::before styled for CSS-generated issue/example/figure numbers:
+ *     -> Documents wishing to use this only need to add
+ *        figcaption::before,
+ *        .caption::before { content: "Figure "  counter(figure) " ";  }
+ *        .example::before { content: "Example " counter(example) " "; }
+ *        .issue::before   { content: "Issue "   counter(issue) " ";   }
+ *
+ * Header Stuff (ignore, just don't conflict with these classes)
+ *   - .head for the header
+ *   - .copyright for the copyright
+ *
+ * Outdated warning for old specs
+ *
+ * Miscellaneous
+ *   - .overlarge for things that should be as wide as possible, even if
+ *     that overflows the body text area. This can be used on an item or
+ *     on its container, depending on the effect desired.
+ *     Note that this styling basically doesn't help at all when printing,
+ *     since A4 paper isn't much wider than the max-width here.
+ *     It's better to design things to fit into a narrower measure if possible.
+ *
+ *   - js-added ToC jump links (see fixup.js)
+ *
+ ******************************************************************************/
+
+/* color variables included separately for reliability */
+
+/******************************************************************************/
+/*                                    Body                                    */
+/******************************************************************************/
+
+	html {
+	}
+
+	body {
+		counter-reset: example figure issue;
+
+		/* Layout */
+		max-width: 50em;			  /* limit line length to 50em for readability   */
+		margin: 0 auto;				/* center text within page                    */
+		padding: 1.6em 1.5em 2em 50px; /* assume 16px font size for downlevel clients */
+		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag    */
+
+		/* Typography */
+		line-height: 1.5;
+		font-family: sans-serif;
+		widows: 2;
+		orphans: 2;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		hyphens: auto;
+
+		color: black;
+		color: var(--text);
+		background: white top left fixed no-repeat;
+		background: var(--bg) top left fixed no-repeat;
+		background-size: 25px auto;
+	}
+
+
+/******************************************************************************/
+/*                         Front Matter & Navigation                          */
+/******************************************************************************/
+
+/** Header ********************************************************************/
+
+	div.head { margin-bottom: 1em; }
+	div.head hr { border-style: solid; }
+
+	div.head h1 {
+		font-weight: bold;
+		margin: 0 0 .1em;
+		font-size: 220%;
+	}
+
+	div.head h2 { margin-bottom: 1.5em;}
+
+/** W3C Logo ******************************************************************/
+
+	.head .logo {
+		float: right;
+		margin: 0.4rem 0 0.2rem .4rem;
+	}
+
+	.head img[src*="logos/W3C"] {
+		display: block;
+		border: solid #1a5e9a;
+		border: solid var(--logo-bg);
+		border-width: .65rem .7rem .6rem;
+		border-radius: .4rem;
+		background: #1a5e9a;
+		background: var(--logo-bg);
+		color: white;
+		color: var(--logo-text);
+		font-weight: bold;
+	}
+
+	.head a:hover > img[src*="logos/W3C"],
+	.head a:focus > img[src*="logos/W3C"] {
+		opacity: .8;
+	}
+
+	.head a:active > img[src*="logos/W3C"] {
+		background: #c00;
+		background: var(--logo-active-bg);
+		border-color: #c00;
+		border-color: var(--logo-active-bg);
+	}
+
+	/* see also additional rules in Link Styling section */
+
+/** Copyright *****************************************************************/
+
+	p.copyright,
+	p.copyright small { font-size: small; }
+
+/** Back to Top / ToC Toggle **************************************************/
+
+	@media print {
+		#toc-nav {
+			display: none;
+		}
+	}
+	@media not print {
+		#toc-nav {
+			position: fixed;
+			z-index: 3;
+			bottom: 0; left: 0;
+			margin: 0;
+			min-width: 1.33em;
+			border-top-right-radius: 2rem;
+			box-shadow: 0 0 2px;
+			font-size: 1.5em;
+		}
+		#toc-nav > a {
+			display: block;
+			white-space: nowrap;
+
+			height: 1.33em;
+			padding: .1em 0.3em;
+			margin: 0;
+
+			box-shadow: 0 0 2px;
+			border: none;
+			border-top-right-radius: 1.33em;
+
+			color: #707070;
+			color: var(--tocnav-normal-text);
+			background: white;
+			background: var(--tocnav-normal-bg);
+		}
+		#toc-nav > a:hover,
+		#toc-nav > a:focus {
+			color: black;
+			color: var(--tocnav-hover-text);
+			background: #f8f8f8;
+			background: var(--tocnav-hover-bg);
+		}
+		#toc-nav > a:active {
+			color: #c00;
+			color: var(--tocnav-active-text);
+			background: white;
+			background: var(--tocnav-active-bg);
+		}
+
+		#toc-nav > #toc-jump {
+			padding-bottom: 2em;
+			margin-bottom: -1.9em;
+		}
+
+		/* statusbar gets in the way on keyboard focus; remove once browsers fix */
+		#toc-nav > a[href="#toc"]:not(:hover):focus:last-child {
+			padding-bottom: 1.5rem;
+		}
+
+		#toc-nav:not(:hover) > a:not(:focus) > span + span {
+			/* Ideally this uses :focus-within on #toc-nav */
+			display: none;
+		}
+		#toc-nav > a > span + span {
+			padding-right: 0.2em;
+		}
+	}
+
+/** ToC Sidebar ***************************************************************/
+
+	/* Floating sidebar */
+	@media screen {
+		body.toc-sidebar #toc {
+			position: fixed;
+			top: 0; bottom: 0;
+			left: 0;
+			width: 23.5em;
+			max-width: 80%;
+			max-width: calc(100% - 2em - 26px);
+			overflow: auto;
+			padding: 0 1em;
+			padding-left: 42px;
+			padding-left: calc(1em + 26px);
+			color: black;
+			color: var(--tocsidebar-text);
+			background: inherit;
+			background-color: #f7f8f9;
+			background-color: var(--tocsidebar-bg);
+			z-index: 1;
+			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
+		}
+		body.toc-sidebar #toc h2 {
+			margin-top: .8rem;
+			font-variant: small-caps;
+			font-variant: all-small-caps;
+			text-transform: lowercase;
+			font-weight: bold;
+			color: gray;
+			color: hsla(203,20%,40%,.7);
+			color: var(--tocsidebar-heading-text);
+		}
+		body.toc-sidebar #toc-jump:not(:focus) {
+			width: 0;
+			height: 0;
+			padding: 0;
+			position: absolute;
+			overflow: hidden;
+		}
+	}
+	/* Hide main scroller when only the ToC is visible anyway */
+	@media screen and (max-width: 28em) {
+		body.toc-sidebar {
+			overflow: hidden;
+		}
+	}
+
+	/* Sidebar with its own space */
+	@media screen and (min-width: 78em) {
+		body:not(.toc-inline) #toc {
+			position: fixed;
+			top: 0; bottom: 0;
+			left: 0;
+			width: 23.5em;
+			overflow: auto;
+			padding: 0 1em;
+			padding-left: 42px;
+			padding-left: calc(1em + 26px);
+			color: black;
+			color: var(--tocsidebar-text);
+			background: inherit;
+			background-color: #f7f8f9;
+			background-color: var(--tocsidebar-bg);
+			z-index: 1;
+			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
+			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
+		}
+		body:not(.toc-inline) #toc h2 {
+			margin-top: .8rem;
+			font-variant: small-caps;
+			font-variant: all-small-caps;
+			text-transform: lowercase;
+			font-weight: bold;
+			color: gray;
+			color: hsla(203,20%,40%,.7);
+			color: var(--tocsidebar-heading-text);
+		}
+
+		body:not(.toc-inline) {
+			padding-left: 29em;
+		}
+		/* See also Overflow section at the bottom */
+
+		body:not(.toc-inline) #toc-jump:not(:focus) {
+			width: 0;
+			height: 0;
+			padding: 0;
+			position: absolute;
+			overflow: hidden;
+		}
+	}
+	@media screen and (min-width: 90em) {
+		body:not(.toc-inline) {
+			margin: 0 4em;
+		}
+	}
+
+/******************************************************************************/
+/*                                Sectioning                                  */
+/******************************************************************************/
+
+/** Headings ******************************************************************/
+
+	h1, h2, h3, h4, h5, h6, dt {
+		page-break-after: avoid;
+		page-break-inside: avoid;
+		font: 100% sans-serif;   /* Reset all font styling to clear out UA styles */
+		font-family: inherit;	/* Inherit the font family. */
+		line-height: 1.2;		/* Keep wrapped headings compact */
+		hyphens: manual;		/* Hyphenated headings look weird */
+	}
+
+	h2, h3, h4, h5, h6 {
+		margin-top: 3rem;
+	}
+
+	h1, h2, h3 {
+		color: #005A9C;
+		color: var(--heading-text);
+	}
+
+	h1 { font-size: 170%; }
+	h2 { font-size: 140%; }
+	h3 { font-size: 120%; }
+	h4 { font-weight: bold; }
+	h5 { font-style: italic; }
+	h6 { font-variant: small-caps; }
+	dt { font-weight: bold; }
+
+/** Subheadings ***************************************************************/
+
+	h1 + h2,
+	#profile-and-date {
+		/* #profile-and-date is a subtitle in an H2 under the H1 */
+		margin-top: 0;
+	}
+	h2 + h3,
+	h3 + h4,
+	h4 + h5,
+	h5 + h6 {
+		margin-top: 1.2em; /* = 1 x line-height */
+	}
+
+/** Section divider ***********************************************************/
+
+	:not(.head) > :not(.head) + hr {
+		font-size: 1.5em;
+		text-align: center;
+		margin: 1em auto;
+		height: auto;
+		color: black;
+		color: var(--hr-text);
+		border: transparent solid 0;
+		background: transparent;
+	}
+	:not(.head) > hr::before {
+		content: "\2727\2003\2003\2727\2003\2003\2727";
+	}
+
+/******************************************************************************/
+/*                            Paragraphs and Lists                            */
+/******************************************************************************/
+
+	p {
+		margin: 1em 0;
+	}
+
+	dd > p:first-child,
+	li > p:first-child {
+		margin-top: 0;
+	}
+
+	ul, ol {
+		margin-left: 0;
+		padding-left: 2em;
+	}
+
+	li {
+		margin: 0.25em 0 0.5em;
+		padding: 0;
+	}
+
+	dl dd {
+		margin: 0 0 .5em 2em;
+	}
+
+	.head dd + dd { /* compact for header */
+		margin-top: -.5em;
+	}
+
+	/* Style for algorithms */
+	ol.algorithm ol:not(.algorithm),
+	.algorithm > ol ol:not(.algorithm) {
+	border-left: 0.5em solid #DEF;
+	border-left: 0.5em solid var(--algo-border);
+	}
+
+	/* Put nice boxes around each algorithm. */
+	[data-algorithm]:not(.heading) {
+	 padding: .5em;
+	 border: thin solid #ddd;
+	 border: thin solid var(--algo-border);
+	 border-radius: .5em;
+	 margin: .5em calc(-0.5em - 1px);
+	}
+	[data-algorithm]:not(.heading) > :first-child {
+	 margin-top: 0;
+	}
+	[data-algorithm]:not(.heading) > :last-child {
+	 margin-bottom: 0;
+	}
+
+	/* Style for switch/case <dl>s */
+	dl.switch > dd > ol.only,
+	dl.switch > dd > .only > ol {
+	margin-left: 0;
+	}
+	dl.switch > dd > ol.algorithm,
+	dl.switch > dd > .algorithm > ol {
+	margin-left: -2em;
+	}
+	dl.switch {
+	padding-left: 2em;
+	}
+	dl.switch > dt {
+	text-indent: -1.5em;
+	margin-top: 1em;
+	}
+	dl.switch > dt + dt {
+	margin-top: 0;
+	}
+	dl.switch > dt::before {
+	content: '\21AA';
+	padding: 0 0.5em 0 0;
+	display: inline-block;
+	width: 1em;
+	text-align: right;
+	line-height: 0.5em;
+	}
+
+/** Terminology Markup ********************************************************/
+
+
+/******************************************************************************/
+/*                                 Inline Markup                              */
+/******************************************************************************/
+
+/** Terminology Markup ********************************************************/
+	dfn   { /* Defining instance */
+		font-weight: bolder;
+	}
+	a > i { /* Instance of term */
+		font-style: normal;
+	}
+	dt dfn code, code.idl {
+		font-size: inherit;
+	}
+	dfn var {
+		font-style: normal;
+	}
+
+/** Change Marking ************************************************************/
+
+	del {
+		color: #aa0000;
+		color: var(--del-text);
+		background: transparent;
+		background: var(--del-bg);
+		text-decoration: line-through;
+	}
+	ins {
+		color: #006100;
+		color: var(--ins-text);
+		background: transparent;
+		background: var(--ins-bg);
+		text-decoration: underline;
+	}
+
+	/* for amendments (candidate/proposed changes) */
+
+	.amendment ins, .correction ins, .addition ins,
+	ins[class^=c] {
+		text-decoration-style: dotted;
+	}
+	.amendment del, .correction del, .addition del,
+	del[class^=c] {
+		text-decoration-style: dotted;
+	}
+	.amendment.proposed ins, .correction.proposed ins, .addition.proposed ins,
+	ins[class^=c].proposed {
+		text-decoration-style: double;
+	}
+	.amendment.proposed del, .correction.proposed del, .addition.proposed del,
+	del[class^=c].proposed {
+		text-decoration-style: double;
+	}
+
+/** Miscellaneous improvements to inline formatting ***************************/
+
+	sup {
+		vertical-align: super;
+		font-size: 80%
+	}
+
+/******************************************************************************/
+/*                                    Code                                    */
+/******************************************************************************/
+
+/** General monospace/pre rules ***********************************************/
+
+	pre, code, samp {
+		font-family: Menlo, Consolas, "DejaVu Sans Mono", Monaco, monospace;
+		font-size: .9em;
+		hyphens: none;
+		text-transform: none;
+		text-align: left;
+		text-align: start;
+		font-variant: normal;
+		orphans: 3;
+		widows: 3;
+		page-break-before: avoid;
+	}
+	pre code,
+	code code {
+		font-size: 100%;
+	}
+
+	pre {
+		margin-top: 1em;
+		margin-bottom: 1em;
+		overflow: auto;
+	}
+
+/** Inline Code fragments *****************************************************/
+
+	/* Do something nice. */
+
+/******************************************************************************/
+/*                                    Links                                   */
+/******************************************************************************/
+
+/** General Hyperlinks ********************************************************/
+
+	/* We hyperlink a lot, so make it less intrusive */
+	a[href] {
+		color: #034575;
+		color: var(--a-normal-text);
+		text-decoration: underline #707070;
+		text-decoration: underline var(--a-normal-underline);
+		text-decoration-skip-ink: none;
+	}
+	a:visited {
+		color: #034575;
+		color: var(--a-visited-text);
+		text-decoration-color: #bbb;
+		text-decoration-color: var(--a-visited-underline);
+	}
+
+	/* Indicate interaction with the link */
+	a[href]:focus,
+	a[href]:hover {
+		text-decoration-thickness: 2px;
+	}
+	a[href]:active {
+		color: #c00;
+		color: var(--a-active-text);
+		text-decoration-color: #c00;
+		text-decoration-color: var(--a-active-underline);
+	}
+
+	/* Backout above styling for W3C logo */
+	.head .logo,
+	.head .logo a {
+		border: none;
+		text-decoration: none;
+		background: transparent;
+	}
+
+/******************************************************************************/
+/*                                    Images                                  */
+/******************************************************************************/
+
+	img {
+		border-style: none;
+	}
+
+	img, svg {
+		/* Intentionally not color-scheme aware. */
+		background: white;
+	}
+
+	/* For autogen numbers, add
+	  .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
+	*/
+
+	figure, .figure, .sidefigure {
+		page-break-inside: avoid;
+		text-align: center;
+		margin: 2.5em 0;
+	}
+	.figure img,	.sidefigure img,	figure img,
+	.figure object, .sidefigure object, figure object {
+		max-width: 100%;
+		margin: auto;
+		height: auto;
+	}
+	.figure pre, .sidefigure pre, figure pre {
+		text-align: left;
+		display: table;
+		margin: 1em auto;
+	}
+	.figure table, figure table {
+		margin: auto;
+	}
+	@media screen and (min-width: 20em) {
+		.sidefigure {
+			float: right;
+			width: 50%;
+			margin: 0 0 0.5em 0.5em;
+		}
+	}
+	.caption, figcaption, caption {
+		font-style: italic;
+		font-size: 90%;
+	}
+	.caption::before, figcaption::before, figcaption > .marker {
+		font-weight: bold;
+	}
+	.caption, figcaption {
+		counter-increment: figure;
+	}
+
+	/* DL list is indented 2em, but figure inside it is not */
+	dd > .figure, dd > figure { margin-left: -2em; }
+
+/******************************************************************************/
+/*                             Colored Boxes                                  */
+/******************************************************************************/
+
+	.issue, .note, .example, .assertion, .advisement, blockquote,
+	.amendment, .correction, .addition {
+		margin: 1em auto;
+		padding: .5em;
+		border: .5em;
+		border-left-style: solid;
+		page-break-inside: avoid;
+	}
+	span.issue, span.note {
+		padding: .1em .5em .15em;
+		border-right-style: solid;
+	}
+
+	blockquote > :first-child,
+	.note  > p:first-child,
+	.issue > p:first-child,
+	.amendment > p:first-child,
+	.correction > p:first-child,
+	.addition > p:first-child {
+		margin-top: 0;
+	}
+	blockquote > :last-child,
+	.note  > p:last-child,
+	.issue > p:last-child,
+	.amendment > p:last-child,
+	.correction > p:last-child,
+	.addition > p:last-child {
+		margin-bottom: 0;
+	}
+
+
+	.issue::before, .issue > .marker,
+	.example::before, .example > .marker,
+	.note::before, .note > .marker,
+	details.note > summary > .marker,
+	.amendment::before, .amendment > .marker,
+	details.amendment > summary > .marker,
+	.addition::before, .addition > .marker,
+	addition.amendment > summary > .marker,
+	.correction::before, .correction > .marker,
+	correction.amendment > summary > .marker
+	{
+		text-transform: uppercase;
+		padding-right: 1em;
+	}
+
+	.example::before, .example > .marker {
+		display: block;
+		padding-right: 0em;
+	}
+
+/** Blockquotes ***************************************************************/
+
+	blockquote {
+		border-color: silver;
+		border-color: var(--blockquote-border);
+		background: transparent;
+		background: var(--blockquote-bg);
+		color: currentcolor;
+		color: var(--blockquote-text);
+	}
+
+/** Open issue ****************************************************************/
+
+	.issue {
+		border-color: #e05252;
+		border-color: var(--issue-border);
+		background: #fbe9e9;
+		background: var(--issue-bg);
+		color: black;
+		color: var(--issue-text);
+		counter-increment: issue;
+		overflow: auto;
+	}
+	.issue::before, .issue > .marker {
+		color: #831616;
+		color: var(--issueheading-text);
+	}
+	/* Add .issue::before { content: "Issue " counter(issue) " "; } for autogen numbers,
+	  or use class="marker" to mark up the issue number in source. */
+
+/** Example *******************************************************************/
+
+	.example {
+		border-color: #e0cb52;
+		border-color: var(--example-border);
+		background: #fcfaee;
+		background: var(--example-bg);
+		color: black;
+		color: var(--example-text);
+		counter-increment: example;
+		overflow: auto;
+		clear: both;
+	}
+	.example::before, .example > .marker {
+		color: #574b0f;
+		color: var(--exampleheading-text);
+	}
+	/* Add .example::before { content: "Example " counter(example) " "; } for autogen numbers,
+	  or use class="marker" to mark up the example number in source. */
+
+/** Non-normative Note ********************************************************/
+
+	.note {
+		border-color: #52e052;
+		border-color: var(--note-border);
+		background: #e9fbe9;
+		background: var(--note-bg);
+		color: black;
+		color: var(--note-text);
+		overflow: auto;
+	}
+
+	.note::before, .note > .marker,
+	details.note > summary {
+		color: hsl(120, 70%, 30%);
+		color: var(--noteheading-text);
+	}
+	/* Add .note::before { content: "Note "; } for autogen label,
+	  or use class="marker" to mark up the label in source. */
+
+	details.note[open] > summary {
+		border-bottom: 1px silver solid;
+		border-bottom: 1px var(--notesummary-underline) solid;
+	}
+
+/** Assertion Box *************************************************************/
+	/*  for assertions in algorithms */
+
+	.assertion {
+		border-color: #AAA;
+		border-color: var(--assertion-border);
+		background: #EEE;
+		background: var(--assertion-bg);
+		color: black;
+		color: var(--assertion-text);
+	}
+
+/** Advisement Box ************************************************************/
+	/*  for attention-grabbing normative statements */
+
+	.advisement {
+		border-color: orange;
+		border-color: var(--advisement-border);
+		border-style: none solid;
+		background: #fec;
+		background: var(--advisement-bg);
+		color: black;
+		color: var(--advisement-text);
+	}
+	strong.advisement {
+		display: block;
+		text-align: center;
+	}
+	.advisement::before, .advisement > .marker {
+		color: #b35f00;
+		color: var(--advisementheading-text);
+	}
+
+/** Amendment Box *************************************************************/
+
+	.amendment, .correction, .addition {
+		border-color: #330099;
+		border-color: var(--amendment-border);
+		background: #F5F0FF;
+		background: var(--amendment-bg);
+		color: black;
+		color: var(--amendment-text);
+	}
+	.amendment.proposed, .correction.proposed, .addition.proposed {
+		border-style: solid;
+		border-block-width: 0.25em;
+	}
+	.amendment::before, .amendment > .marker,
+	details.amendment > summary::before, details.amendment > summary > .marker,
+	.correction::before, .correction > .marker,
+	details.correction > summary::before, details.correction > summary > .marker,
+	.addition::before, .addition > .marker,
+	details.addition > summary::before, details.addition > summary > .marker {
+		color: #220066;
+		color: var(--amendmentheading-text);
+	}
+	.amendment.proposed::before, .amendment.proposed > .marker,
+	details.amendment.proposed > summary::before, details.amendment.proposed > summary > .marker,
+	.correction.proposed::before, .correction.proposed > .marker,
+	details.correction.proposed > summary::before, details.correction.proposed > summary > .marker,
+	.addition.proposed::before, .addition.proposed > .marker,
+	details.addition.proposed > summary::before, details.addition.proposed > summary > .marker {
+		font-weight: bold;
+	}
+
+/** Spec Obsoletion Notice ****************************************************/
+	/* obnoxious obsoletion notice for older/abandoned specs. */
+
+	details {
+		display: block;
+	}
+	summary {
+		font-weight: bolder;
+	}
+
+	.annoying-warning:not(details),
+	details.annoying-warning:not([open]) > summary,
+	details.annoying-warning[open] {
+		background: hsla(40,100%,50%,0.95);
+		background: var(--warning-bg);
+		color: black;
+		color: var(--warning-text);
+		padding: .75em 1em;
+		border: red;
+		border: var(--warning-border);
+		border-style: solid none;
+		box-shadow: 0 2px 8px black;
+		text-align: center;
+	}
+	.annoying-warning :last-child {
+		margin-bottom: 0;
+	}
+
+@media not print {
+	details.annoying-warning[open] {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 2em;
+		z-index: 1000;
+	}
+}
+
+	details.annoying-warning:not([open]) > summary {
+		text-align: center;
+	}
+
+/** Entity Definition Boxes ***************************************************/
+
+	.def {
+		padding: .5em 1em;
+		background: #def;
+		background: var(--def-bg);
+		margin: 1.2em 0;
+		border-left: 0.5em solid #8ccbf2;
+		border-left: 0.5em solid var(--def-border);
+		color: black;
+		color: var(--def-text);
+	}
+
+/******************************************************************************/
+/*                                    Tables                                  */
+/******************************************************************************/
+
+	th, td {
+		text-align: left;
+		text-align: start;
+	}
+
+/** Property/Descriptor Definition Tables *************************************/
+
+	table.def {
+		/* inherits .def box styling, see above */
+		width: 100%;
+		border-spacing: 0;
+	}
+
+	table.def td,
+	table.def th {
+		padding: 0.5em;
+		vertical-align: baseline;
+		border-bottom: 1px solid #bbd7e9;
+		border-bottom: 1px solid var(--defrow-border);
+	}
+
+	table.def > tbody > tr:last-child th,
+	table.def > tbody > tr:last-child td {
+		border-bottom: 0;
+	}
+
+	table.def th {
+		font-style: italic;
+		font-weight: normal;
+		padding-left: 1em;
+		width: 3em;
+	}
+
+	/* For when values are extra-complex and need formatting for readability */
+	table td.pre {
+		white-space: pre-wrap;
+	}
+
+	/* A footnote at the bottom of a def table */
+	table.def td.footnote {
+		padding-top: 0.6em;
+	}
+	table.def td.footnote::before {
+		content: " ";
+		display: block;
+		height: 0.6em;
+		width: 4em;
+		border-top: thin solid;
+	}
+
+/** Data tables (and properly marked-up index tables) *************************/
+	/*
+		<table class="data"> highlights structural relationships in a table
+		when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
+
+		Use class="complex data" for particularly complicated tables --
+		(This will draw more lines: busier, but clearer.)
+
+		Use class="long" on table cells with paragraph-like contents
+		(This will adjust text alignment accordingly.)
+		Alternately use class="longlastcol" on tables, to have the last column assume "long".
+	*/
+
+	table {
+		word-wrap: normal;
+		overflow-wrap: normal;
+		hyphens: manual;
+	}
+
+	table.data,
+	table.index {
+		margin: 1em auto;
+		border-collapse: collapse;
+		border: hidden;
+		width: 100%;
+	}
+	table.data caption,
+	table.index caption {
+		max-width: 50em;
+		margin: 0 auto 1em;
+	}
+
+	table.data td,  table.data th,
+	table.index td, table.index th {
+		padding: 0.5em 1em;
+		border-width: 1px;
+		border-color: silver;
+		border-color: var(--datacell-border);
+		border-top-style: solid;
+	}
+
+	table.data thead td:empty {
+		padding: 0;
+		border: 0;
+	}
+
+	table.data  thead,
+	table.index thead,
+	table.data  tbody,
+	table.index tbody {
+		border-bottom: 2px solid;
+	}
+
+	table.data colgroup,
+	table.index colgroup {
+		border-left: 2px solid;
+	}
+
+	table.data  tbody th:first-child,
+	table.index tbody th:first-child  {
+		border-right: 2px solid;
+		border-top: 1px solid silver;
+		border-top: 1px solid var(--datacell-border);
+		padding-right: 1em;
+	}
+
+	table.data th[colspan],
+	table.data td[colspan] {
+		text-align: center;
+	}
+
+	table.complex.data th,
+	table.complex.data td {
+		border: 1px solid silver;
+		border: 1px solid var(--datacell-border);
+		text-align: center;
+	}
+
+	table.data.longlastcol td:last-child,
+	table.data td.long {
+		vertical-align: baseline;
+		text-align: left;
+	}
+
+	table.data img {
+		vertical-align: middle;
+	}
+
+
+/*
+Alternate table alignment rules
+
+	table.data,
+	table.index {
+		text-align: center;
+	}
+
+	table.data  thead th[scope="row"],
+	table.index thead th[scope="row"] {
+		text-align: right;
+	}
+
+	table.data  tbody th:first-child,
+	table.index tbody th:first-child  {
+		text-align: right;
+	}
+
+Possible extra rowspan handling
+
+	table.data  tbody th[rowspan]:not([rowspan='1']),
+	table.index tbody th[rowspan]:not([rowspan='1']),
+	table.data  tbody td[rowspan]:not([rowspan='1']),
+	table.index tbody td[rowspan]:not([rowspan='1']) {
+		border-left: 1px solid silver;
+	}
+
+	table.data  tbody th[rowspan]:first-child,
+	table.index tbody th[rowspan]:first-child,
+	table.data  tbody td[rowspan]:first-child,
+	table.index tbody td[rowspan]:first-child{
+		border-left: 0;
+		border-right: 1px solid silver;
+	}
+*/
+
+/******************************************************************************/
+/*                                  Indices                                   */
+/******************************************************************************/
+
+
+/** Table of Contents *********************************************************/
+
+	.toc a {
+		/* More spacing; use padding to make it part of the click target. */
+		padding: 0.1rem 1px 0;
+		/* Larger, more consistently-sized click target */
+		display: block;
+		/* Switch to using border-bottom for underlines */
+		text-decoration: none;
+		border-bottom: 1px solid;
+		/* Reverse color scheme */
+		color: black;
+		color: var(--toclink-text);
+		border-color: #3980b5;
+		border-color: var(--toclink-underline);
+	}
+	.toc a:visited {
+		color: black;
+		color: var(--toclink-visited-text);
+		border-color: #054572;
+		border-color: var(--toclink-visited-underline);
+	}
+	.toc a:focus,
+	.toc a:hover {
+		background: rgba(75%, 75%, 75%, .25);
+		background: var(--a-hover-bg);
+		border-bottom-width: 3px;
+		margin-bottom: -2px;
+	}
+	.toc a:not(:focus):not(:hover) {
+		/* Allow colors to cascade through from link styling */
+		border-bottom-color: transparent;
+	}
+
+	.toc, .toc ol, .toc ul, .toc li {
+		list-style: none; /* Numbers must be inlined into source */
+		/* because generated content isn't search/selectable and markers can't do multilevel yet */
+		margin:  0;
+		padding: 0;
+	}
+	.toc {
+		line-height: 1.1em;
+	}
+
+	/* ToC not indented until third level, but font style & margins show hierarchy */
+	.toc > li			{ font-weight: bold;   }
+	.toc > li li		 { font-weight: normal; }
+	.toc > li li li	  { font-size:   95%;	}
+	.toc > li li li li	{ font-size:   90%;	}
+	.toc > li li li li li { font-size:   85%;	}
+
+	/* @supports not (display:grid) { */
+		.toc > li			{ margin: 1.5rem 0;	}
+		.toc > li li		 { margin: 0.3rem 0;	}
+		.toc > li li li	  { margin-left: 2rem;   }
+
+		/* Section numbers in a column of their own */
+		.toc .secno {
+			float: left;
+			width: 4rem;
+			white-space: nowrap;
+		}
+		.toc > li li li li .secno { font-size: 85%; }
+		.toc > li li li li li .secno { font-size: 100%; }
+
+		.toc li {
+			clear: both;
+		}
+
+		:not(li) > .toc			 { margin-left:  5rem; }
+		.toc .secno				 { margin-left: -5rem; }
+		.toc > li li li .secno	  { margin-left: -7rem; }
+		.toc > li li li li .secno	{ margin-left: -9rem; }
+		.toc > li li li li li .secno { margin-left: -11rem; }
+
+		/* Tighten up indentation in narrow ToCs */
+		@media (max-width: 30em) {
+			:not(li) > .toc			 { margin-left:  4rem; }
+			.toc .secno				 { margin-left: -4rem; }
+			.toc > li li li			 { margin-left:  1rem; }
+			.toc > li li li .secno	  { margin-left: -5rem; }
+			.toc > li li li li .secno	{ margin-left: -6rem; }
+			.toc > li li li li li .secno { margin-left: -7rem; }
+		}
+		/* Loosen it on wide screens */
+		@media screen and (min-width: 78em) {
+			body:not(.toc-inline) :not(li) > .toc			 { margin-left:  4rem; }
+			body:not(.toc-inline) .toc .secno				 { margin-left: -4rem; }
+			body:not(.toc-inline) .toc > li li li			 { margin-left:  1rem; }
+			body:not(.toc-inline) .toc > li li li .secno	  { margin-left: -5rem; }
+			body:not(.toc-inline) .toc > li li li li .secno	{ margin-left: -6rem; }
+			body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
+	}
+	/* } */
+
+	@supports (display:grid) and (display:contents) {
+		/* Use #toc over .toc to override non-@supports rules. */
+		#toc {
+			display: grid;
+			align-content: start;
+			grid-template-columns: auto 1fr;
+			grid-column-gap: 1rem;
+			column-gap: 1rem;
+			grid-row-gap: .6rem;
+			row-gap: .6rem;
+		}
+		#toc h2 {
+			grid-column: 1 / -1;
+			margin-bottom: 0;
+		}
+		#toc ol,
+		#toc li,
+		#toc a {
+			display: contents;
+			/* Switch <a> to subgrid when supported */
+		}
+		#toc span {
+			margin: 0;
+		}
+		#toc > .toc > li > a > span {
+			/* The spans of the top-level list,
+			  comprising the first items of each top-level section. */
+			margin-top: 1.1rem;
+		}
+		#toc#toc .secno { /* Ugh, need more specificity to override base.css */
+			grid-column: 1;
+			width: auto;
+			margin-left: 0;
+		}
+		#toc .content {
+			grid-column: 2;
+			width: auto;
+			margin-right: 1rem;
+			border-bottom: 3px solid transparent;
+			margin-bottom: -3px;
+		}
+		#toc .content:hover,
+		#toc .content:focus {
+			background: rgba(75%, 75%, 75%, .25);
+			background: var(--a-hover-bg);
+			border-bottom-color: #054572;
+			border-bottom-color: var(--toclink-underline);
+		}
+		#toc li li li .content {
+			margin-left: 1rem;
+		}
+		#toc li li li li .content {
+			margin-left: 2rem;
+		}
+	}
+
+
+/** Index *********************************************************************/
+
+	/* Index Lists: Layout */
+	ul.index	  { margin-left: 0; columns: 15em; text-indent: 1em hanging; }
+	ul.index li	{ margin-left: 0; list-style: none; break-inside: avoid; }
+	ul.index li li { margin-left: 1em; }
+	ul.index dl	{ margin-top: 0; }
+	ul.index dt	{ margin: .2em 0 .2em 20px;}
+	ul.index dd	{ margin: .2em 0 .2em 40px;}
+	/* Index Lists: Typography */
+	ul.index ul,
+	ul.index dl { font-size: smaller; }
+	@media not print {
+		ul.index li a + span {
+			white-space: nowrap;
+			color: transparent; }
+		ul.index li a:hover + span,
+		ul.index li a:focus + span {
+			color: #707070;
+			color: var(--indexinfo-text);
+		}
+	}
+
+/** Index Tables *****************************************************/
+	/* See also the data table styling section, which this effectively subclasses */
+
+	table.index {
+		font-size: small;
+		border-collapse: collapse;
+		border-spacing: 0;
+		text-align: left;
+		margin: 1em 0;
+	}
+
+	table.index td,
+	table.index th {
+		padding: 0.4em;
+	}
+
+	table.index tr:hover td:not([rowspan]),
+	table.index tr:hover th:not([rowspan]) {
+		color: black;
+		color: var(--indextable-hover-text);
+		background: #f7f8f9;
+		background: var(--indextable-hover-bg);
+	}
+
+	/* The link in the first column in the property table (formerly a TD) */
+	table.index th:first-child a {
+		font-weight: bold;
+	}
+
+/** Outdated warning **********************************************************/
+
+.outdated-spec {
+	color: black;
+	color: var(--outdatedspec-text);
+	background-color: rgba(0,0,0,0.5);
+	background-color: var(--outdatedspec-bg);
+}
+
+.outdated-warning {
+	position: fixed;
+	bottom: 50%;
+	left: 0;
+	right: 0;
+	margin: 0 auto;
+	width: 50%;
+	background: maroon;
+	background: var(--outdated-bg);
+	color: white;
+	color: var(--outdated-text);
+	border-radius: 1em;
+	box-shadow: 0 0 1em red;
+	box-shadow: 0 0 1em var(--outdated-shadow);
+	padding: 2em;
+	text-align: center;
+	z-index: 2;
+}
+
+.outdated-warning a {
+	color: currentcolor;
+	background: transparent;
+}
+
+.edited-rec-warning {
+	background: darkorange;
+	background: var(--editedrec-bg);
+	box-shadow: 0 0 1em;
+}
+
+.outdated-warning button {
+	color: var(--outdated-text);
+	border-radius: 1em;
+	box-shadow: 0 0 1em red;
+	box-shadow: 0 0 1em var(--outdated-shadow);
+	padding: 2em;
+	text-align: center;
+	z-index: 2;
+}
+
+.outdated-warning a {
+	color: currentcolor;
+	background: transparent;
+}
+
+.edited-rec-warning {
+	background: darkorange;
+	background: var(--editedrec-bg);
+	box-shadow: 0 0 1em;
+}
+
+.outdated-warning button {
+	position: absolute;
+	top: 0;
+	right:0;
+	margin: 0;
+	border: 0;
+	padding: 0.25em 0.5em;
+	background: transparent;
+	color: white;
+	color: var(--outdated-text);
+	font:1em sans-serif;
+	text-align:center;
+}
+
+.outdated-warning span {
+	display: block;
+}
+
+.outdated-collapsed {
+	bottom: 0;
+	border-radius: 0;
+	width: 100%;
+	padding: 0;
+}
+
+/******************************************************************************/
+/*                                    Print                                   */
+/******************************************************************************/
+
+	@media print {
+		/* Pages have their own margins. */
+		html {
+			margin: 0;
+		}
+		/* Serif for print. */
+		body {
+			font-family: serif;
+		}
+
+		.outdated-warning {
+			position: absolute;
+			border-style: solid;
+			border-color: red;
+		}
+
+		.outdated-warning input {
+			display: none;
+		}
+	}
+	@page {
+		margin: 1.5cm 1.1cm;
+	}
+
+
+
+/******************************************************************************/
+/*                             Overflow Control                               */
+/******************************************************************************/
+
+	.figure .caption, .sidefigure .caption, figcaption {
+		/* in case figure is overlarge, limit caption to 50em */
+		max-width: 50rem;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	.overlarge {
+		/* Magic to create good item positioning:
+		  "content column" is 50ems wide at max; less on smaller screens.
+		  Extra space (after ToC + content) is empty on the right.
+
+		  1. When item < content column, centers item in column.
+		  2. When content < item < available, left-aligns.
+		  3. When item > available, fills available + scroll bar.
+		*/
+		display: grid;
+		grid-template-columns: minmax(0, 50em);
+	}
+	.overlarge > table {
+		/* limit preferred width of table */
+		max-width: 50em;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	@media (min-width: 55em) {
+		.overlarge {
+			margin-right: calc(13px + 26.5rem - 50vw);
+			max-width: none;
+		}
+	}
+	@media screen and (min-width: 78em) {
+		body:not(.toc-inline) .overlarge {
+			/* 30.5em body padding 50em content area */
+			margin-right: calc(40em - 50vw) !important;
+		}
+	}
+	@media screen and (min-width: 90em) {
+		body:not(.toc-inline) .overlarge {
+			/* 4em html margin 30.5em body padding 50em content area */
+			margin-right: calc(84.5em - 100vw) !important;
+		}
+	}
+
+	@media not print {
+		.overlarge {
+			overflow-x: auto;
+			/* See Lea Verou's explanation background-attachment:
+			* http://lea.verou.me/2012/04/background-attachment-local/
+			*
+			background: top left  / 4em 100% linear-gradient(to right,  #ffffff, rgba(255, 255, 255, 0)) local,
+						top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
+						top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+						top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+						white;
+			background-repeat: no-repeat;
+			*/
+		}
+	}
+</style>
+  <meta content="Bikeshed version d113b2e81, updated Tue Jun 9 14:57:55 2026 -0700" name="generator">
+  <meta content="4de4d94ab3314ade940de98e5c420a9fed3e1ca7" name="revision">
+  <meta content="dark light" name="color-scheme">
+<style>/* Boilerplate: style-autolinks */
+.css.css, .property.property, .descriptor.descriptor {
+    color: var(--a-normal-text);
+    font-size: inherit;
+    font-family: inherit;
+}
+.css::before, .property::before, .descriptor::before {
+    content: "‘";
+}
+.css::after, .property::after, .descriptor::after {
+    content: "’";
+}
+.property, .descriptor {
+    /* Don't wrap property and descriptor names */
+    white-space: nowrap;
+}
+.type { /* CSS value <type> */
+    font-style: italic;
+}
+pre .property::before, pre .property::after {
+    content: "";
+}
+[data-link-type="property"]::before,
+[data-link-type="propdesc"]::before,
+[data-link-type="descriptor"]::before,
+[data-link-type="value"]::before,
+[data-link-type="function"]::before,
+[data-link-type="at-rule"]::before,
+[data-link-type="selector"]::before,
+[data-link-type="maybe"]::before {
+    content: "‘";
+}
+[data-link-type="property"]::after,
+[data-link-type="propdesc"]::after,
+[data-link-type="descriptor"]::after,
+[data-link-type="value"]::after,
+[data-link-type="function"]::after,
+[data-link-type="at-rule"]::after,
+[data-link-type="selector"]::after,
+[data-link-type="maybe"]::after {
+    content: "’";
+}
+
+[data-link-type].production::before,
+[data-link-type].production::after,
+.prod [data-link-type]::before,
+.prod [data-link-type]::after {
+    content: "";
+}
+
+[data-link-type=element],
+[data-link-type=element-attr] {
+    font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    font-size: .9em;
+}
+[data-link-type=element]::before { content: "<" }
+[data-link-type=element]::after  { content: ">" }
+
+[data-link-type=biblio] {
+    white-space: pre;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --selflink-text: black;
+        --selflink-bg: silver;
+        --selflink-hover-text: white;
+    }
+}
+</style>
+<style>/* Boilerplate: style-colors */
+/* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
+:root {
+    color-scheme: light dark;
+
+    --text: black;
+    --bg: white;
+
+    --unofficial-watermark: url(https://www.w3.org/StyleSheets/TR/2016/logos/UD-watermark);
+
+    --logo-bg: #1a5e9a;
+    --logo-active-bg: #c00;
+    --logo-text: white;
+
+    --tocnav-normal-text: #707070;
+    --tocnav-normal-bg: var(--bg);
+    --tocnav-hover-text: var(--tocnav-normal-text);
+    --tocnav-hover-bg: #f8f8f8;
+    --tocnav-active-text: #c00;
+    --tocnav-active-bg: var(--tocnav-normal-bg);
+
+    --tocsidebar-text: var(--text);
+    --tocsidebar-bg: #f7f8f9;
+    --tocsidebar-shadow: rgba(0,0,0,.1);
+    --tocsidebar-heading-text: hsla(203,20%,40%,.7);
+
+    --toclink-text: var(--text);
+    --toclink-underline: #3980b5;
+    --toclink-visited-text: var(--toclink-text);
+    --toclink-visited-underline: #054572;
+
+    --heading-text: #005a9c;
+
+    --hr-text: var(--text);
+
+    --algo-border: #def;
+
+    --del-text: red;
+    --del-bg: transparent;
+    --ins-text: #080;
+    --ins-bg: transparent;
+
+    --a-normal-text: #034575;
+    --a-normal-underline: #bbb;
+    --a-visited-text: var(--a-normal-text);
+    --a-visited-underline: #707070;
+    --a-hover-bg: rgba(75%, 75%, 75%, .25);
+    --a-active-text: #c00;
+    --a-active-underline: #c00;
+
+    --blockquote-border: silver;
+    --blockquote-bg: transparent;
+    --blockquote-text: currentcolor;
+
+    --issue-border: #e05252;
+    --issue-bg: #fbe9e9;
+    --issue-text: var(--text);
+    --issueheading-text: #831616;
+
+    --example-border: #e0cb52;
+    --example-bg: #fcfaee;
+    --example-text: var(--text);
+    --exampleheading-text: #574b0f;
+
+    --note-border: #52e052;
+    --note-bg: #e9fbe9;
+    --note-text: var(--text);
+    --noteheading-text: hsl(120, 70%, 30%);
+    --notesummary-underline: silver;
+
+    --assertion-border: #aaa;
+    --assertion-bg: #eee;
+    --assertion-text: black;
+
+    --advisement-border: orange;
+    --advisement-bg: #fec;
+    --advisement-text: var(--text);
+    --advisementheading-text: #b35f00;
+
+    --warning-border: red;
+    --warning-bg: hsla(40,100%,50%,0.95);
+    --warning-text: var(--text);
+
+    --amendment-border: #330099;
+    --amendment-bg: #F5F0FF;
+    --amendment-text: var(--text);
+    --amendmentheading-text: #220066;
+
+    --def-border: #8ccbf2;
+    --def-bg: #def;
+    --def-text: var(--text);
+    --defrow-border: #bbd7e9;
+
+    --datacell-border: silver;
+
+    --indexinfo-text: #707070;
+
+    --indextable-hover-text: black;
+    --indextable-hover-bg: #f7f8f9;
+
+    --outdatedspec-bg: rgba(0, 0, 0, .5);
+    --outdatedspec-text: black;
+    --outdated-bg: maroon;
+    --outdated-text: white;
+    --outdated-shadow: red;
+
+    --editedrec-bg: darkorange;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #ddd;
+        --bg: black;
+
+        --unofficial-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
+
+        --logo-bg: #1a5e9a;
+        --logo-active-bg: #c00;
+        --logo-text: white;
+
+        --tocnav-normal-text: #999;
+        --tocnav-normal-bg: var(--bg);
+        --tocnav-hover-text: var(--tocnav-normal-text);
+        --tocnav-hover-bg: #080808;
+        --tocnav-active-text: #f44;
+        --tocnav-active-bg: var(--tocnav-normal-bg);
+
+        --tocsidebar-text: var(--text);
+        --tocsidebar-bg: #080808;
+        --tocsidebar-shadow: rgba(255,255,255,.1);
+        --tocsidebar-heading-text: hsla(203,20%,40%,.7);
+
+        --toclink-text: var(--text);
+        --toclink-underline: #6af;
+        --toclink-visited-text: var(--toclink-text);
+        --toclink-visited-underline: #054572;
+
+        --heading-text: #8af;
+
+        --hr-text: var(--text);
+
+        --algo-border: #456;
+
+        --del-text: #f44;
+        --del-bg: transparent;
+        --ins-text: #4a4;
+        --ins-bg: transparent;
+
+        --a-normal-text: #6af;
+        --a-normal-underline: #555;
+        --a-visited-text: var(--a-normal-text);
+        --a-visited-underline: var(--a-normal-underline);
+        --a-hover-bg: rgba(25%, 25%, 25%, .2);
+        --a-active-text: #f44;
+        --a-active-underline: var(--a-active-text);
+
+        --borderedblock-bg: rgba(255, 255, 255, .05);
+
+        --blockquote-border: silver;
+        --blockquote-bg: var(--borderedblock-bg);
+        --blockquote-text: currentcolor;
+
+        --issue-border: #e05252;
+        --issue-bg: var(--borderedblock-bg);
+        --issue-text: var(--text);
+        --issueheading-text: hsl(0deg, 70%, 70%);
+
+        --example-border: hsl(50deg, 90%, 60%);
+        --example-bg: var(--borderedblock-bg);
+        --example-text: var(--text);
+        --exampleheading-text: hsl(50deg, 70%, 70%);
+
+        --note-border: hsl(120deg, 100%, 35%);
+        --note-bg: var(--borderedblock-bg);
+        --note-text: var(--text);
+        --noteheading-text: hsl(120, 70%, 70%);
+        --notesummary-underline: silver;
+
+        --assertion-border: #444;
+        --assertion-bg: var(--borderedblock-bg);
+        --assertion-text: var(--text);
+
+        --advisement-border: orange;
+        --advisement-bg: #222218;
+        --advisement-text: var(--text);
+        --advisementheading-text: #f84;
+
+        --warning-border: red;
+        --warning-bg: hsla(40,100%,20%,0.95);
+        --warning-text: var(--text);
+
+        --amendment-border: #330099;
+        --amendment-bg: #080010;
+        --amendment-text: var(--text);
+        --amendmentheading-text: #cc00ff;
+
+        --def-border: #8ccbf2;
+        --def-bg: #080818;
+        --def-text: var(--text);
+        --defrow-border: #136;
+
+        --datacell-border: silver;
+
+        --indexinfo-text: #aaa;
+
+        --indextable-hover-text: var(--text);
+        --indextable-hover-bg: #181818;
+
+        --outdatedspec-bg: rgba(255, 255, 255, .5);
+        --outdatedspec-text: black;
+        --outdated-bg: maroon;
+        --outdated-text: white;
+        --outdated-shadow: red;
+
+        --editedrec-bg: darkorange;
+    }
+    /* In case a transparent-bg image doesn't expect to be on a dark bg,
+       which is quite common in practice... */
+    img { background: white; }
+}
+</style>
+<style>/* Boilerplate: style-counters */
+body {
+    counter-reset: example figure issue table;
+}
+.issue {
+    counter-increment: issue;
+}
+.issue:not(.no-marker)::before {
+    content: "Issue " counter(issue);
+}
+
+.example {
+    counter-increment: example;
+}
+.example:not(.no-marker)::before {
+    content: "Example " counter(example);
+}
+.invalid.example:not(.no-marker)::before,
+.illegal.example:not(.no-marker)::before {
+    content: "Invalid Example " counter(example);
+}
+
+figcaption {
+    counter-increment: figure;
+}
+figcaption:not(.no-marker)::before {
+    content: "Figure " counter(figure) " ";
+}
+
+figure.table figcaption {
+    counter-increment: table;
+}
+figure.table figcaption:not(.no-marker)::before {
+    content: "Table " counter(table) " ";
+}
+</style>
+<style>/* Boilerplate: style-issues */
+a[href].issue-return {
+    float: right;
+    float: inline-end;
+    color: var(--issueheading-text);
+    font-weight: bold;
+    text-decoration: none;
+}
+</style>
+<style>/* Boilerplate: style-md-lists */
+/* This is a weird hack for me not yet following the commonmark spec
+   regarding paragraph and lists. */
+[data-md] > :first-child {
+    margin-top: 0;
+}
+[data-md] > :last-child {
+    margin-bottom: 0;
+}
+</style>
+<style>/* Boilerplate: style-selflinks */
+:root {
+    --selflink-text: white;
+    --selflink-bg: gray;
+    --selflink-hover-text: black;
+}
+.heading, .issue, .note, .example, li, dt {
+    position: relative;
+}
+a.self-link {
+    position: absolute;
+    top: 0;
+    left: calc(-1 * (3.5rem - 26px));
+    width: calc(3.5rem - 26px);
+    height: 2em;
+    text-align: center;
+    border: none;
+    transition: opacity .2s;
+    opacity: .5;
+}
+a.self-link:hover {
+    opacity: 1;
+}
+.heading > a.self-link {
+    font-size: 83%;
+}
+.example > a.self-link,
+.note > a.self-link,
+.issue > a.self-link {
+    /* These blocks are overflow:auto, so positioning outside
+       doesn't work. */
+    left: auto;
+    right: 0;
+}
+li > a.self-link {
+    left: calc(-1 * (3.5rem - 26px) - 2em);
+}
+dfn > a.self-link {
+    top: auto;
+    left: auto;
+    opacity: 0;
+    width: 1.5em;
+    height: 1.5em;
+    background: var(--selflink-bg);
+    color: var(--selflink-text);
+    font-style: normal;
+    transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+    opacity: 1;
+}
+dfn > a.self-link:hover {
+    color: var(--selflink-hover-text);
+}
+
+a.self-link::before            { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before      { content: "#"; }
+</style>
+<style>/* Boilerplate: style-syntax-highlighting */
+code.highlight { padding: .1em; border-radius: .3em; }
+pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
+
+.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
+c-[a] { color: #990055 } /* Keyword.Declaration */
+c-[b] { color: #990055 } /* Keyword.Type */
+c-[c] { color: #708090 } /* Comment */
+c-[d] { color: #708090 } /* Comment.Multiline */
+c-[e] { color: #0077aa } /* Name.Attribute */
+c-[f] { color: #669900 } /* Name.Tag */
+c-[g] { color: #222222 } /* Name.Variable */
+c-[k] { color: #990055 } /* Keyword */
+c-[l] { color: #000000 } /* Literal */
+c-[m] { color: #000000 } /* Literal.Number */
+c-[n] { color: #0077aa } /* Name */
+c-[o] { color: #999999 } /* Operator */
+c-[p] { color: #999999 } /* Punctuation */
+c-[s] { color: #a67f59 } /* Literal.String */
+c-[t] { color: #a67f59 } /* Literal.String.Single */
+c-[u] { color: #a67f59 } /* Literal.String.Double */
+c-[cp] { color: #708090 } /* Comment.Preproc */
+c-[c1] { color: #708090 } /* Comment.Single */
+c-[cs] { color: #708090 } /* Comment.Special */
+c-[kc] { color: #990055 } /* Keyword.Constant */
+c-[kn] { color: #990055 } /* Keyword.Namespace */
+c-[kp] { color: #990055 } /* Keyword.Pseudo */
+c-[kr] { color: #990055 } /* Keyword.Reserved */
+c-[ld] { color: #000000 } /* Literal.Date */
+c-[nc] { color: #0077aa } /* Name.Class */
+c-[no] { color: #0077aa } /* Name.Constant */
+c-[nd] { color: #0077aa } /* Name.Decorator */
+c-[ni] { color: #0077aa } /* Name.Entity */
+c-[ne] { color: #0077aa } /* Name.Exception */
+c-[nf] { color: #0077aa } /* Name.Function */
+c-[nl] { color: #0077aa } /* Name.Label */
+c-[nn] { color: #0077aa } /* Name.Namespace */
+c-[py] { color: #0077aa } /* Name.Property */
+c-[ow] { color: #999999 } /* Operator.Word */
+c-[mb] { color: #000000 } /* Literal.Number.Bin */
+c-[mf] { color: #000000 } /* Literal.Number.Float */
+c-[mh] { color: #000000 } /* Literal.Number.Hex */
+c-[mi] { color: #000000 } /* Literal.Number.Integer */
+c-[mo] { color: #000000 } /* Literal.Number.Oct */
+c-[sb] { color: #a67f59 } /* Literal.String.Backtick */
+c-[sc] { color: #a67f59 } /* Literal.String.Char */
+c-[sd] { color: #a67f59 } /* Literal.String.Doc */
+c-[se] { color: #a67f59 } /* Literal.String.Escape */
+c-[sh] { color: #a67f59 } /* Literal.String.Heredoc */
+c-[si] { color: #a67f59 } /* Literal.String.Interpol */
+c-[sx] { color: #a67f59 } /* Literal.String.Other */
+c-[sr] { color: #a67f59 } /* Literal.String.Regex */
+c-[ss] { color: #a67f59 } /* Literal.String.Symbol */
+c-[vc] { color: #0077aa } /* Name.Variable.Class */
+c-[vg] { color: #0077aa } /* Name.Variable.Global */
+c-[vi] { color: #0077aa } /* Name.Variable.Instance */
+c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
+
+@media (prefers-color-scheme: dark) {
+    .highlight:not(.idl) { background: rgba(255, 255, 255, .05); }
+
+    c-[a] { color: #d33682 } /* Keyword.Declaration */
+    c-[b] { color: #d33682 } /* Keyword.Type */
+    c-[c] { color: #2aa198 } /* Comment */
+    c-[d] { color: #2aa198 } /* Comment.Multiline */
+    c-[e] { color: #268bd2 } /* Name.Attribute */
+    c-[f] { color: #b58900 } /* Name.Tag */
+    c-[g] { color: #cb4b16 } /* Name.Variable */
+    c-[k] { color: #d33682 } /* Keyword */
+    c-[l] { color: #657b83 } /* Literal */
+    c-[m] { color: #657b83 } /* Literal.Number */
+    c-[n] { color: #268bd2 } /* Name */
+    c-[o] { color: #657b83 } /* Operator */
+    c-[p] { color: #657b83 } /* Punctuation */
+    c-[s] { color: #6c71c4 } /* Literal.String */
+    c-[t] { color: #6c71c4 } /* Literal.String.Single */
+    c-[u] { color: #6c71c4 } /* Literal.String.Double */
+    c-[ch] { color: #2aa198 } /* Comment.Hashbang */
+    c-[cp] { color: #2aa198 } /* Comment.Preproc */
+    c-[cpf] { color: #2aa198 } /* Comment.PreprocFile */
+    c-[c1] { color: #2aa198 } /* Comment.Single */
+    c-[cs] { color: #2aa198 } /* Comment.Special */
+    c-[kc] { color: #d33682 } /* Keyword.Constant */
+    c-[kn] { color: #d33682 } /* Keyword.Namespace */
+    c-[kp] { color: #d33682 } /* Keyword.Pseudo */
+    c-[kr] { color: #d33682 } /* Keyword.Reserved */
+    c-[ld] { color: #657b83 } /* Literal.Date */
+    c-[nc] { color: #268bd2 } /* Name.Class */
+    c-[no] { color: #268bd2 } /* Name.Constant */
+    c-[nd] { color: #268bd2 } /* Name.Decorator */
+    c-[ni] { color: #268bd2 } /* Name.Entity */
+    c-[ne] { color: #268bd2 } /* Name.Exception */
+    c-[nf] { color: #268bd2 } /* Name.Function */
+    c-[nl] { color: #268bd2 } /* Name.Label */
+    c-[nn] { color: #268bd2 } /* Name.Namespace */
+    c-[py] { color: #268bd2 } /* Name.Property */
+    c-[ow] { color: #657b83 } /* Operator.Word */
+    c-[mb] { color: #657b83 } /* Literal.Number.Bin */
+    c-[mf] { color: #657b83 } /* Literal.Number.Float */
+    c-[mh] { color: #657b83 } /* Literal.Number.Hex */
+    c-[mi] { color: #657b83 } /* Literal.Number.Integer */
+    c-[mo] { color: #657b83 } /* Literal.Number.Oct */
+    c-[sa] { color: #6c71c4 } /* Literal.String.Affix */
+    c-[sb] { color: #6c71c4 } /* Literal.String.Backtick */
+    c-[sc] { color: #6c71c4 } /* Literal.String.Char */
+    c-[dl] { color: #6c71c4 } /* Literal.String.Delimiter */
+    c-[sd] { color: #6c71c4 } /* Literal.String.Doc */
+    c-[se] { color: #6c71c4 } /* Literal.String.Escape */
+    c-[sh] { color: #6c71c4 } /* Literal.String.Heredoc */
+    c-[si] { color: #6c71c4 } /* Literal.String.Interpol */
+    c-[sx] { color: #6c71c4 } /* Literal.String.Other */
+    c-[sr] { color: #6c71c4 } /* Literal.String.Regex */
+    c-[ss] { color: #6c71c4 } /* Literal.String.Symbol */
+    c-[fm] { color: #268bd2 } /* Name.Function.Magic */
+    c-[vc] { color: #cb4b16 } /* Name.Variable.Class */
+    c-[vg] { color: #cb4b16 } /* Name.Variable.Global */
+    c-[vi] { color: #cb4b16 } /* Name.Variable.Instance */
+    c-[vm] { color: #cb4b16 } /* Name.Variable.Magic */
+    c-[il] { color: #657b83 } /* Literal.Number.Integer.Long */
+}
+
+@media print {
+    /* Darken colors for print that would otherwise print too faintly */
+    c-[c]  { color: #555555 } /* Comment */
+    c-[d]  { color: #555555 } /* Comment.Multiline */
+    c-[cp] { color: #555555 } /* Comment.Preproc */
+    c-[c1] { color: #555555 } /* Comment.Single */
+    c-[cs] { color: #555555 } /* Comment.Special */
+    c-[o]  { color: #222222 } /* Operator */
+    c-[p]  { color: #222222 } /* Punctuation */
+    c-[ow] { color: #222222 } /* Operator.Word */
+    c-[s]  { color: #664400 } /* Literal.String */
+    c-[t]  { color: #664400 } /* Literal.String.Single */
+    c-[u]  { color: #664400 } /* Literal.String.Double */
+    c-[sb] { color: #664400 } /* Literal.String.Backtick */
+    c-[sc] { color: #664400 } /* Literal.String.Char */
+    c-[sd] { color: #664400 } /* Literal.String.Doc */
+    c-[se] { color: #664400 } /* Literal.String.Escape */
+    c-[sh] { color: #664400 } /* Literal.String.Heredoc */
+    c-[si] { color: #664400 } /* Literal.String.Interpol */
+    c-[sx] { color: #664400 } /* Literal.String.Other */
+    c-[sr] { color: #664400 } /* Literal.String.Regex */
+    c-[ss] { color: #664400 } /* Literal.String.Symbol */
+}
+</style>
+ <body class="h-entry">
+  <div class="head">
+   <h1 class="no-ref p-name" id="title">Agent Credential Management</h1>
+   <h2 class="heading no-num no-ref no-toc settled" id="profile-and-date"><span class="content">Independent Discussion Draft (v0),
+    <time class="dt-updated" datetime="2026-10-14">14 October 2026</time></span></h2>
+   <div data-fill-with="spec-metadata">
+    <dl>
+     <dt>Issue Tracking:
+     <dd><a href="https://github.com/nicksteele-oai/draft-credential-management-api/issues/">GitHub</a>
+     <dt class="editor">Editor:
+     <dd class="editor h-card p-author vcard"><span class="fn p-name">Nick Steele</span> (<span class="org p-org">OpenAI</span>)
+    </dl>
+   </div>
+   <div data-fill-with="warning">
+    <p><strong>Note to readers.</strong> This is an early, independent proposal for external discussion. It is not a working group document, an implementation commitment, or a statement of the editor’s employer’s position. It has not been adopted or endorsed by the W3C, the FIDO Alliance, or the OpenID Foundation. Requirements describe the proposed design and may change.</p>
+   </div>
+   <hr title="Separator for header">
+  </div>
+  <div class="p-summary" data-fill-with="abstract">
+   <h2 class="heading no-num no-ref no-toc settled" id="abstract"><span class="content">Abstract</span></h2>
+   <p>This discussion draft proposes a provider-neutral interface for software agents to request use of managed credentials. A credential manager keeps credentials by default, applies policy and any required user verification, and performs operations for approved destinations. A trusted runtime authenticates the requester and supplies execution context; agents work with opaque references. This v0 explains why that separation is useful, how a request is processed, and what the public interface looks like through minimal IDL and worked examples. It is not an implementation commitment or a complete wire protocol.</p>
+  </div>
+  <div data-fill-with="at-risk"></div>
+  <nav data-fill-with="table-of-contents" id="toc">
+   <h2 class="no-num no-ref no-toc" id="contents">Table of Contents</h2>
+   <ol class="toc">
+    <li>
+     <a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
+     <ol class="toc">
+      <li><a href="#why-this-design"><span class="secno">1.1</span> <span class="content">Why mediate credential use?</span></a>
+     </ol>
+    <li><a href="#agent-conformance"><span class="secno">2</span> <span class="content">Conventions and terms</span></a>
+    <li>
+     <a href="#architecture"><span class="secno">3</span> <span class="content">Architecture and trust</span></a>
+     <ol class="toc">
+      <li><a href="#how-a-request-works"><span class="secno">3.1</span> <span class="content">How a request works</span></a>
+      <li><a href="#trusted-task-context"><span class="secno">3.2</span> <span class="content">Trust provenance and task context</span></a>
+     </ol>
+    <li>
+     <a href="#credential-manager-interface"><span class="secno">4</span> <span class="content">Credential Manager Interface</span></a>
+     <ol class="toc">
+      <li><a href="#minimal-idl"><span class="secno">4.1</span> <span class="content">Minimal IDL</span></a>
+      <li><a href="#operation-lifecycle"><span class="secno">4.2</span> <span class="content">Lifecycle and errors</span></a>
+     </ol>
+    <li>
+     <a href="#protected-operation-execution"><span class="secno">5</span> <span class="content">Protected operation execution</span></a>
+     <ol class="toc">
+      <li><a href="#https-request-execution"><span class="secno">5.1</span> <span class="content">HTTPS requests</span></a>
+      <li><a href="#authentication-and-passkeys"><span class="secno">5.2</span> <span class="content">Authentication, passkeys, signing, and tokens</span></a>
+     </ol>
+    <li><a href="#authorized-shared-key-release"><span class="secno">6</span> <span class="content">Authorized shared-key release</span></a>
+    <li>
+     <a href="#security-considerations"><span class="secno">7</span> <span class="content">Security requirements and considerations</span></a>
+     <ol class="toc">
+      <li><a href="#requester-and-transport-authentication"><span class="secno">7.1</span> <span class="content">Requester and task authentication</span></a>
+      <li><a href="#provider-authorization"><span class="secno">7.2</span> <span class="content">Provider authorization and protected interaction</span></a>
+      <li><a href="#credential-confidentiality"><span class="secno">7.3</span> <span class="content">Credential and operation-result confidentiality</span></a>
+      <li><a href="#privacy-considerations"><span class="secno">7.4</span> <span class="content">Privacy and user interaction</span></a>
+     </ol>
+    <li>
+     <a href="#examples"><span class="secno">8</span> <span class="content">Examples</span></a>
+     <ol class="toc">
+      <li><a href="#example-api-credential-request"><span class="secno">8.1</span> <span class="content">Selecting a credential and making an HTTPS request</span></a>
+      <li><a href="#example-ssh-signing"><span class="secno">8.2</span> <span class="content">SSH signing without disclosing the private key</span></a>
+      <li><a href="#example-pending-operation"><span class="secno">8.3</span> <span class="content">Checking and cancelling a pending operation</span></a>
+     </ol>
+    <li><a href="#acknowledgments"><span class="secno">9</span> <span class="content">Acknowledgments</span></a>
+    <li><a href="#mcp-provider-integration-profile"><span class="secno"></span> <span class="content">Appendix A. MCP provider integration</span></a>
+    <li>
+     <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ol class="toc">
+      <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
+      <li><a href="#informative"><span class="secno"></span> <span class="content">Non-Normative References</span></a>
+     </ol>
+   </ol>
+  </nav>
+  <main>
+   <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
+   <p>Software agents interact with APIs, remote systems, and applications that require credentials. Today, applications often put those credentials directly in a process, configuration file, environment variable, log, or model-visible tool result. Once a reusable secret is exposed, it is harder to limit where it can be used, understand who used it, or revoke a specific authorization without replacing the credential itself.</p>
+   <p>This proposal separates asking to use a credential from having the credential. An agent names the operation and destination. A trusted runtime supplies authenticated requester and task context. A credential manager decides whether the request is allowed, handles any required interaction, and applies the credential on the requester’s behalf. By default, the agent receives an opaque reference or a filtered result. An optional exception for delivery of certain shared secrets is described in <a href="#authorized-shared-key-release">§ 6 Authorized shared-key release</a>.</p>
+   <p>The proposal is aimed at credential-provider and agent-runtime implementers, enterprise identity and security teams, and people evaluating consent, privacy, and accessibility. It draws on the application-facing request model of <a data-link-type="biblio" href="#biblio-credential-management-1" title="Credential Management Level 1">[CREDENTIAL-MANAGEMENT-1]</a>, the security properties of <a data-link-type="biblio" href="#biblio-webauthn-3" title="Web Authentication: An API for accessing Public Key Credentials - Level 3">[WEBAUTHN-3]</a>, and the authorization vocabulary of <a data-link-type="biblio" href="#biblio-authzen" title="Authorization API 1.0">[AUTHZEN]</a>. It does not modify those standards or their public APIs. This v0 defines proposed behavioral requirements; it does not yet define complete message schemas, a mandatory transport, capability identifiers, or a conformance test suite.</p>
+   <h3 class="heading settled" data-level="1.1" id="why-this-design"><span class="secno">1.1. </span><span class="content">Why mediate credential use?</span><a class="self-link" href="#why-this-design"></a></h3>
+   <p>Consider an agent asked to open an issue for a failed deployment. It needs authority to make one request to an issue tracker. It generally does not need to read the API credential, reuse it with unrelated services, or copy it into its conversation. Giving the agent a bearer credential makes those outcomes possible even if the user intended only the first. Giving it a provider-mediated operation lets the provider enforce the destination and action at the point where the credential is actually applied.</p>
+   <p>The runtime and provider contribute different evidence. The runtime knows which workload, task, and principal it authenticated. The provider knows which credentials exist, where they are allowed to be used, and whether approval is necessary. An opaque reference connects the two without replacing either check: copying the reference to another task or presenting it without authenticated context does not grant access. The same separation gives the provider a place to record a bounded decision and to stop honoring an authorization when its scope ends.</p>
+   <p>This is most useful when agents read untrusted content, invoke many tools, or continue work across sessions. An instruction in a webpage or tool response cannot legitimately change the provider’s approved destination or make itself proof of consent. The separation has limits: a provider-mediated action can still expose confidential downstream data, send an authorized but mistaken request, or produce an uncertain result after a timeout. Authorization, response filtering, clear approval, and accurate reporting of uncertain outcomes are still necessary. Once an explicitly released secret reaches its recipient, custody protection no longer applies to that copy.</p>
+   <h2 class="heading settled" data-level="2" id="agent-conformance"><span class="secno">2. </span><span class="content">Conventions and terms</span><a class="self-link" href="#agent-conformance"></a></h2>
+   <p>The key words MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL are to be interpreted as described in <a data-link-type="biblio" href="#biblio-rfc2119" title="Key words for use in RFCs to Indicate Requirement Levels">[RFC2119]</a> and <a data-link-type="biblio" href="#biblio-rfc8174" title="Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words">[RFC8174]</a> when, and only when, they appear in all capitals. They express requirements of this proposal, not approval by a standards body. Examples and notes are informative.</p>
+   <table class="data">
+    <thead>
+     <tr>
+      <th scope="col">Term
+      <th scope="col">Meaning in this draft
+
+    <tbody>
+     <tr>
+      <td><strong>Agent client</strong>
+      <td>Software acting within a task that requests discovery or use of credentials. It is not a policy authority merely because it initiated the request.
+
+     <tr>
+      <td><strong>Trusted runtime</strong>
+      <td>A platform component that authenticates the requester, establishes trustworthy execution context, and routes requests, protected results, and provider-controlled interactions.
+
+     <tr>
+      <td><strong>Credential manager</strong>
+      <td>A provider that stores, accesses, or controls credential material; evaluates policy; and performs or supervises protected operations.
+
+     <tr>
+      <td><strong>Credential owner</strong>
+      <td>The person, organization, or administrative principal that controls a credential and the policy applicable to it.
+
+     <tr>
+      <td><strong>Task</strong>
+      <td>A bounded unit of work associated with authenticated principals and execution contexts. Its opaque identifier is a correlation handle, not proof of authorization.
+
+     <tr>
+      <td><strong>Credential reference</strong>
+      <td>An opaque identifier plus any permitted non-sensitive metadata. It is neither the credential nor a bearer authorization to use it.
+
+     <tr>
+      <td><strong>Audience</strong>
+      <td>The intended destination or relying party, such as an HTTPS origin, SSH host, or WebAuthn relying party. The provider verifies the effective destination.
+
+     <tr>
+      <td><strong>Protected result</strong>
+      <td>A filtered response, public material, or opaque reference that does not expose a reusable secret or other transferable authentication material to the requester.
+
+   </table>
+   <p>A policy decision point, when present, is a separate enterprise component that returns an authorization decision. The credential manager remains the enforcement point; a permit decision is one input to its decision to perform an operation.</p>
+   <h2 class="heading settled" data-level="3" id="architecture"><span class="secno">3. </span><span class="content">Architecture and trust</span><a class="self-link" href="#architecture"></a></h2>
+   <p>The proposal uses three boundaries. The agent communicates its intent to the runtime; the runtime supplies independently authenticated context to the credential manager; and the manager applies the credential only to the verified destination or separately authorizes delivery to an identified recipient. A provider can use a local vault, a remote service, or an enterprise system behind that boundary. Those deployment choices do not transfer policy or custody to the agent.</p>
+   <p>The credential manager owns credential selection and matching; whether to unlock or prompt; the required verification level; the decision to approve or deny; where and how a credential is applied; what may be returned; and how authorization expires or is revoked. The common enforcement requirements are collected in <a href="#provider-authorization">§ 7.2 Provider authorization and protected interaction</a>. Selecting an item in a user interface is not automatically authorization to use or release it.</p>
+   <p>Provider and enterprise policy are cumulative where enterprise policy applies. A provider may consult a policy decision point using the subject, resource, action, and context model of <a data-link-type="biblio" href="#biblio-authzen" title="Authorization API 1.0">[AUTHZEN]</a>, but v0 does not require that service or a particular policy language.</p>
+   <h3 class="heading settled" data-level="3.1" id="how-a-request-works"><span class="secno">3.1. </span><span class="content">How a request works</span><a class="self-link" href="#how-a-request-works"></a></h3>
+   <p>The following sequence describes the ordinary protected-use path. An integration may combine steps in one call, but it must preserve the trust boundaries described in this document.</p>
+   <ol>
+    <li data-md>
+     <p><strong>The agent states its intent.</strong> It may first call <code>getInfo</code> to learn capabilities, <code>discover</code> for eligible metadata, or <code>get</code> to select a reference. It identifies the intended audience and action; a purpose string is only explanatory.</p>
+    <li data-md>
+     <p><strong>The runtime adds independent context.</strong> It authenticates the caller and supplies task and execution context over a trusted channel. The provider does not take an agent-written identity, approval, or task claim as equivalent evidence.</p>
+    <li data-md>
+     <p><strong>The provider makes the decision.</strong> It resolves the reference, checks the actual destination and operation, applies credential and enterprise policy, and handles required user verification through its own channel. Denial does not reveal hidden credentials; a pending decision may return an operation identifier.</p>
+    <li data-md>
+     <p><strong>The provider applies the credential.</strong> For HTTPS it can attach the credential only after checking the approved destination; for signing it can perform a purpose-bound signing operation without giving the caller the private key. Selecting a credential earlier does not waive this decision.</p>
+    <li data-md>
+     <p><strong>The runtime returns a limited outcome.</strong> It delivers the permitted response or an opaque status identifier and keeps credential and approval material out of the ordinary transcript. The caller may use <code>status</code>, <code>cancel</code>, or <code>revoke</code> when applicable; cancellation cannot undo a downstream action already performed.</p>
+   </ol>
+   <h3 class="heading settled" data-level="3.2" id="trusted-task-context"><span class="secno">3.2. </span><span class="content">Trust provenance and task context</span><a class="self-link" href="#trusted-task-context"></a></h3>
+   <p>The runtime supplies independently authenticated context about the requester and task. An agent-supplied task identifier, business justification, ticket number, destination label, or approval claim is an untrusted assertion. It is not evidence that the task, approval, or business process exists.</p>
+   <p>The required attributes and validation checks are specified in <a href="#requester-and-transport-authentication">§ 7.1 Requester and task authentication</a>. v0 does not prescribe an attestation format or trust-discovery mechanism. It requires a provider to establish trust in the runtime or proof issuer before relying on that context.</p>
+   <h2 class="heading settled" data-level="4" id="credential-manager-interface"><span class="secno">4. </span><span class="content">Credential Manager Interface</span><a class="self-link" href="#credential-manager-interface"></a></h2>
+   <p>The names below identify proposed actions and expected behavior. The IDL in <a href="#minimal-idl">§ 4.1 Minimal IDL</a> supplies an abbreviated programming interface; exact operation payloads, capability identifiers, version negotiation, and serialized errors remain open. A runtime MAY expose a local typed interface, platform API, or remote transport. If an implementation uses JSON-RPC, it SHOULD use <a data-link-type="biblio" href="#biblio-json-rpc-2" title="JSON-RPC 2.0 Specification">[JSON-RPC-2]</a> and the <code>credentialManager/</code> prefix for these same public method names.</p>
+   <table class="data">
+    <thead>
+     <tr>
+      <th scope="col">Action
+      <th scope="col">Proposed behavior
+
+    <tbody>
+     <tr>
+      <td><code>getInfo</code>
+      <td>Return provider identity, availability, version, and non-sensitive capabilities. It MUST NOT reveal vault contents, unlock state details that disclose private information, raw policy, or globally enumerable account identifiers.
+
+     <tr>
+      <td><code>discover</code>
+      <td>Return policy-filtered credential references compatible with the requested audience and action. It MUST NOT provide an unscoped listing of accounts, items, credentials, or services.
+
+     <tr>
+      <td><code>get</code>
+      <td>Select a credential for the requested audience and action, using provider-controlled interaction if needed; return an opaque reference. Selection does not authorize unrestricted use.
+
+     <tr>
+      <td><code>use</code>
+      <td>Execute an authorized operation under provider control and return a protected result; optionally, use the distinct release path in <a href="#authorized-shared-key-release">§ 6 Authorized shared-key release</a>.
+
+     <tr>
+      <td><code>status</code>
+      <td>Return safe operation or authorization state to an authorized requester, subject to the same metadata-disclosure policy as other methods.
+
+     <tr>
+      <td><code>cancel</code>
+      <td>Request that a pending operation or interaction end. Cancellation cannot guarantee that a downstream action already performed will be undone.
+
+     <tr>
+      <td><code>revoke</code>
+      <td>Invalidate provider-controlled authority within an authorized scope. Revocation does not guarantee that an already-delivered shared secret has been invalidated by its issuer.
+
+   </table>
+   <p>Credential provisioning and enrollment are outside the v0 public interface. A provider may arrange them out of band or just in time while handling <code>get</code> or <code>use</code>. Any setup remains provider-controlled and follows <a href="#provider-authorization">§ 7.2 Provider authorization and protected interaction</a> and <a href="#credential-confidentiality">§ 7.3 Credential and operation-result confidentiality</a>; it does not introduce a model-visible secret-ingestion path. Delegation is deferred to a future extension.</p>
+   <p>A request conceptually identifies the task, intended action and audience, an optional credential reference or selection hint, and operation-specific input. Purpose text and other requester-provided context may help a human or provider understand a request, but do not establish authority. <a href="#security-considerations">§ 7 Security requirements and considerations</a> defines the common requirements for references, authenticated context, authorization, and disclosure.</p>
+   <p>Discovery and state checks can reveal metadata, so they follow the same authentication and policy requirements as protected use. If policy requires owner selection, the provider controls which choices are shown and how the owner confirms.</p>
+   <h3 class="heading settled" data-level="4.1" id="minimal-idl"><span class="secno">4.1. </span><span class="content">Minimal IDL</span><a class="self-link" href="#minimal-idl"></a></h3>
+   <p>The first block lists the v0 public methods. Generic <code>object</code> types abbreviate method-specific dictionaries or results that v0 does not define in full; they are not permission to accept arbitrary authority, secrets, or policy overrides. The second block shows only the fields needed to understand a credential reference and a protected use. It omits optional metadata, detailed result variants, and transport bindings. The notation follows <a data-link-type="biblio" href="#biblio-webidl" title="Web IDL Standard">[WEBIDL]</a>; it does not by itself prescribe a browser API or a global object.</p>
+<pre class="highlight lang-webidl" data-v0-idl><c- b>interface</c-> <c- g>CredentialManager</c-> {
+  <c- b>Promise</c->&lt;<c- b>object</c->> <c- g>getInfo</c->();
+  <c- b>Promise</c->&lt;<c- b>sequence</c->&lt;<c- n>CredentialReference</c->>> <c- g>discover</c->(<c- b>object</c-> <c- g>request</c->);
+  <c- b>Promise</c->&lt;<c- n>CredentialReference</c->?> <c- g>get</c->(<c- b>object</c-> <c- g>request</c->);
+  <c- b>Promise</c->&lt;<c- n>CredentialResult</c->> <c- g>use</c->(<c- n>CredentialUseRequest</c-> <c- g>request</c->);
+  <c- b>Promise</c->&lt;<c- b>object</c->> <c- g>status</c->(<c- b>object</c-> <c- g>request</c->);
+  <c- b>Promise</c->&lt;<c- b>undefined</c->> <c- g>cancel</c->(<c- b>object</c-> <c- g>request</c->);
+  <c- b>Promise</c->&lt;<c- b>undefined</c->> <c- g>revoke</c->(<c- b>object</c-> <c- g>request</c->);
+};
+</pre>
+<pre class="highlight lang-webidl" data-v0-idl><c- b>dictionary</c-> <c- g>CredentialReference</c-> {
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>id</c->;
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>providerId</c->;
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>type</c->;
+};
+<c- b>dictionary</c-> <c- g>CredentialUseRequest</c-> {
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>taskId</c->;
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>credentialId</c->;
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>operation</c->;
+  <c- b>required</c-> <c- b>object</c-> <c- g>audience</c->;
+  <c- b>object</c-> <c- g>input</c->;
+};
+<c- b>dictionary</c-> <c- g>CredentialResult</c-> {
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>kind</c->;
+  <c- b>required</c-> <c- b>DOMString</c-> <c- g>operationId</c->;
+  <c- b>object</c-> <c- g>response</c->;
+};
+</pre>
+   <p>For example, the HTTPS and SSH operations in <a href="#examples">§ 8 Examples</a> provide different audience and <code>input</code> members. The runtime separately supplies authenticated context; it is not a field the agent fills in to prove authority. The abbreviated result is not the delivery format for a released credential: any delivery still follows <a href="#authorized-shared-key-release">§ 6 Authorized shared-key release</a> and goes only to the authorized recipient.</p>
+   <p>A credential-backed response may identify the acting agent, workload, or effective principal when provider policy and the underlying protocol permit it. Identity information that affects authorization is subject to <a href="#requester-and-transport-authentication">§ 7.1 Requester and task authentication</a>, and authentication artifacts follow the delivery rules in <a href="#credential-confidentiality">§ 7.3 Credential and operation-result confidentiality</a>. Carrying agent information does not itself confer delegated authority. Agent-identity claim formats and delegation flows are outside v0.</p>
+   <h3 class="heading settled" data-level="4.2" id="operation-lifecycle"><span class="secno">4.2. </span><span class="content">Lifecycle and errors</span><a class="self-link" href="#operation-lifecycle"></a></h3>
+   <p>A provider MAY return an opaque operation identifier when verification or execution is pending. The runtime presents the pending state while the provider handles any required interaction under <a href="#provider-authorization">§ 7.2 Provider authorization and protected interaction</a>. Resuming or polling an operation follows the same authentication requirements as its initial request.</p>
+   <p>Retries can cause duplicate effects. A provider SHOULD distinguish a known rejection from an uncertain downstream outcome and SHOULD prevent duplicate sensitive actions where practicable. A runtime MUST NOT present a timeout, connection loss, or cancellation request as proof that an action did not happen. Common status names, idempotency keys, retry semantics, and interoperable revocation signaling remain open in v0.</p>
+   <p>Providers SHOULD expose stable, sanitized error categories. The categories proposed for review are: <code>operation_not_supported</code>, <code>invalid_request</code>, <code>not_authorized</code>, <code>interaction_required</code>, <code>interaction_cancelled</code>, <code>expired_or_revoked</code>, and <code>execution_failed</code>. The disclosure rules in <a href="#credential-confidentiality">§ 7.3 Credential and operation-result confidentiality</a> apply; an implementation MAY deliberately use the same error for multiple sensitive conditions.</p>
+   <h2 class="heading settled" data-level="5" id="protected-operation-execution"><span class="secno">5. </span><span class="content">Protected operation execution</span><a class="self-link" href="#protected-operation-execution"></a></h2>
+   <p>On <code>use</code>, the manager MUST apply <a href="#security-considerations">§ 7 Security requirements and considerations</a>, resolve any credential reference, derive and validate the effective destination and action, and verify the credential supports the operation. The manager then performs the operation under provider control or independently authorizes delivery under <a href="#authorized-shared-key-release">§ 6 Authorized shared-key release</a>. It returns a protected result, an explicitly authorized release result, or a sanitized error.</p>
+   <p>The requester MUST NOT be able to choose an arbitrary credential-application method or downgrade destination validation. The manager MUST reject a mismatch between declared audience and actual request, ambiguous host or URL parsing, an untrusted proxy destination, cross-origin credential propagation, or an SSH or relying-party identity mismatch. When an operation type cannot be safely bounded or its effective destination cannot be independently verified, the provider MUST reject it. Returning a filtered result does not remove the need to enforce the authority exercised at the destination.</p>
+   <p>Credentials may include API credentials, passwords, passkeys, SSH keys, and one-time-password credentials, depending on provider support. The rules below apply to the corresponding operation when supported; v0 does not require every provider to support every credential type. <a href="#credential-confidentiality">§ 7.3 Credential and operation-result confidentiality</a> sets the common custody and result-filtering requirements.</p>
+   <h3 class="heading settled" data-level="5.1" id="https-request-execution"><span class="secno">5.1. </span><span class="content">HTTPS requests</span><a class="self-link" href="#https-request-execution"></a></h3>
+   <p>For a protected HTTPS request, the manager MUST verify the effective scheme, hostname, port, method, and applicable path restriction before applying a credential. It MUST reject plaintext HTTP, ambiguous user information or host normalization, and destinations that cannot be verified against the approved audience. The manager MUST NOT forward credentials across a redirect to an unapproved origin. Redirect handling MUST preserve authorization constraints for any credentialed follow-up request.</p>
+   <p>Response bodies, headers, redirect locations, and server messages can contain sensitive data even if the original credential never leaves the provider. The result-filtering requirements in <a href="#credential-confidentiality">§ 7.3 Credential and operation-result confidentiality</a> apply to every part of the HTTPS response.</p>
+   <h3 class="heading settled" data-level="5.2" id="authentication-and-passkeys"><span class="secno">5.2. </span><span class="content">Authentication, passkeys, signing, and tokens</span><a class="self-link" href="#authentication-and-passkeys"></a></h3>
+   <p>An authentication operation MUST enforce its protocol-specific audience and challenge. A WebAuthn passkey operation MUST preserve the relying-party identifier, origin, challenge, user presence, and user-verification semantics required by <a data-link-type="biblio" href="#biblio-webauthn-3" title="Web Authentication: An API for accessing Public Key Credentials - Level 3">[WEBAUTHN-3]</a>. v0 does not create a new way for a non-browser runtime to establish client or origin authority or bypass a ceremony. The agent MUST NOT receive the private key. A WebAuthn assertion MUST be delivered only through an approved protocol channel; it is not safe to put in model context simply because it is not a long-lived key.</p>
+   <p>A signing operation MUST verify the key, algorithm, audience, payload format, and purpose. Implementations SHOULD use protocol-specific domain separation and reject arbitrary signing requests that could produce a valid assertion for another protocol. An SSH agent lease MUST be limited to the authorized recipient process, identities, lifetime, and revocation scope; SSH agent forwarding MUST NOT be enabled unless separately authorized by provider policy.</p>
+   <p>An OTP, bearer token, refresh token, signed assertion, or other derived artifact can authorize an external action. The manager MUST treat such values as sensitive. An operation that derives or issues a token SHOULD return an opaque reference or directly execute the downstream action. It MUST NOT expose a transferable secret except through explicitly authorized release to an authenticated recipient. Provider policy may prohibit release even when a credential type technically supports it.</p>
+   <h2 class="heading settled" data-level="6" id="authorized-shared-key-release"><span class="secno">6. </span><span class="content">Authorized shared-key release</span><a class="self-link" href="#authorized-shared-key-release"></a></h2>
+   <p>This is an OPTIONAL exception to provider custody. A manager MAY release a password, API key, scoped bearer token, or similar shared-secret credential only when provider policy and, in an enterprise deployment, enterprise policy explicitly authorize delivery. “Shared-key” includes passwords and bearer secrets whether or not they are cryptographic keys. A provider may omit the capability and still offer protected operations. A request to use a credential MUST NOT itself select or compel release.</p>
+   <p>Before release, the manager MUST authenticate the intended recipient and verify the credential, audience, requested operation, applicable execution scope, and any required approval. It MUST explicitly distinguish release from ordinary protected results; this draft calls that result <code>released_credential</code>. Merely seeing the result type or being the caller does not make the agent or model the authorized recipient. The provider MUST NOT silently substitute release for an unsupported protected operation.</p>
+   <p>The runtime MUST deliver the value only to the authorized recipient, subject to <a href="#credential-confidentiality">§ 7.3 Credential and operation-result confidentiality</a>. If the recipient is an agent or model, the credential manager and, in an enterprise deployment, the enterprise MUST explicitly authorize that recipient and exposure. Neither provider approval nor an instruction to the recipient can guarantee that a disclosed secret will not be copied or reused.</p>
+   <p>Issuer-enforced scope, expiration, and revocation SHOULD limit released credentials where supported. An implementation MUST NOT claim stronger restrictions than the issuer or downstream service actually enforces. The release path MUST NOT deliver SSH private keys, passkey private keys, vault-unlock material, vault-session credentials, or other non-exportable credentials. Revoking provider authorization after release is not equivalent to rotating or invalidating the delivered secret at its issuer.</p>
+   <h2 class="heading settled" data-level="7" id="security-considerations"><span class="secno">7. </span><span class="content">Security requirements and considerations</span><a class="self-link" href="#security-considerations"></a></h2>
+   <p>These requirements apply to every public method, including discovery and status checks, and to provider-private integrations. Operation-specific requirements in <a href="#protected-operation-execution">§ 5 Protected operation execution</a> and the exception in <a href="#authorized-shared-key-release">§ 6 Authorized shared-key release</a> also apply.</p>
+   <h3 class="heading settled" data-level="7.1" id="requester-and-transport-authentication"><span class="secno">7.1. </span><span class="content">Requester and task authentication</span><a class="self-link" href="#requester-and-transport-authentication"></a></h3>
+   <p>The runtime and provider MUST authenticate one another before sending security-sensitive context. Local deployments SHOULD use owner-restricted operating-system endpoints and authenticated peers. Remote deployments MUST use authenticated, integrity-protected, confidential transport. The provider MUST identify and trust the runtime or proof issuer before accepting context.</p>
+   <p>The runtime MUST authenticate the requester and supply a task identifier, authenticated agent or workload identity, and issuance and expiration times through an authenticated channel. It SHOULD supply the effective human or service principal, tenant or workspace, deployment, and execution instance where available; the provider MUST require whichever attributes its policy depends on.</p>
+   <p>For every operation, including resumption and polling, the manager MUST authenticate the requester and context; match the agent-visible task identifier to the authenticated task; confirm the requester may act within that task; check expiration and applicable revocation; and bind its decision to the actual operation, credential, audience, and effective principal. It MUST reject task substitution, cross-tenant authorization, replayed or expired proofs, and conflicting or insufficiently authenticated attributes used in policy decisions. Credential references MUST be unguessable and policy-scoped. Credential references and operation identifiers MUST NOT be accepted as bearer authority.</p>
+   <p>If a signed assertion or attestation is used, it SHOULD identify the issuer, requester, intended manager, task, issuance and expiration times, and a nonce or equivalent replay control. It SHOULD bind a request digest when approval is operation-specific. The manager MUST validate the issuer against configured trust and reject proofs for another manager, requester, task, audience, or operation.</p>
+   <h3 class="heading settled" data-level="7.2" id="provider-authorization"><span class="secno">7.2. </span><span class="content">Provider authorization and protected interaction</span><a class="self-link" href="#provider-authorization"></a></h3>
+   <p>The provider MUST enforce credential and applicable enterprise policy, including every mandatory decision and obligation. It MUST deny an operation when a required decision is missing, invalid, expired, or cannot be enforced, and MUST derive the effective action from the actual operation rather than an agent-supplied label such as “read-only.” Unsupported operations MUST be rejected explicitly, without silent fallback to disclosure or an unprotected action.</p>
+   <p>The runtime and manager MUST enforce policy, custody, and recipient routing independently of model behavior. Requester assertions and instructions in webpages, documents, messages, tool descriptions, or tool output MUST NOT establish approval, change an approved recipient or destination, or weaken policy. Purpose strings, ticket numbers, and claims about a business process MUST be independently verified when they affect a decision. The public interface MUST NOT accept parameters that assert approval, disable verification, set secret exposure, override policy, or supply a vault-unlock secret.</p>
+   <p>Unlocking, authentication challenges, verification, selection, approval, and secret delivery MUST use protected provider-controlled channels. An agent acknowledgement, item selection, or generic chat message MUST NOT be treated as sufficient approval. Sensitive interactions MUST NOT pass through generic elicitation, event hooks, ordinary model-visible tool results, diagnostics, or reconnect replay. Reconnection MUST NOT replay secrets or reinterpret a prior interaction as fresh approval.</p>
+   <p>Provider-private capabilities MUST remain inaccessible as ordinary model-callable tools. The runtime MUST authenticate the configured provider and restrict calls to approved credential operations. A requester-controlled adapter or an untrusted provider description MUST NOT supply policy or approval instructions. These requirements also apply to the optional integration described in <a href="#mcp-provider-integration-profile">Appendix A. MCP provider integration</a>.</p>
+   <h3 class="heading settled" data-level="7.3" id="credential-confidentiality"><span class="secno">7.3. </span><span class="content">Credential and operation-result confidentiality</span><a class="self-link" href="#credential-confidentiality"></a></h3>
+   <p>Credential material and provider-private authentication data MUST be kept out of agent-visible requests, responses, logs, telemetry, diagnostics, hooks, ordinary tool or MCP transcripts, and replay except for explicitly authorized delivery under <a href="#authorized-shared-key-release">§ 6 Authorized shared-key release</a>. Ordinary requests MUST NOT contain plaintext passwords, private keys, bearer or refresh tokens, vault-unlock secrets, or OTP seeds. Private keys, passkey private material, vault-unlock material, and vault-session credentials MUST NOT be delivered to agents. Disclosure permission for one named recipient does not authorize logging, diagnostic retention, or replay to another session. Raw assertions and provider-private proof SHOULD remain outside model context and agent-visible transcripts.</p>
+   <p>The manager MUST treat operation results as potentially sensitive and apply an appropriate response policy before delivery. Protected results MUST omit authorization headers, cookies, token responses, and other credential material. Redirect locations, OTPs, signed assertions, server messages, and decrypted material can also carry transferable authority or confidential data; they MUST NOT be returned through a generic protected result when their delivery requires the release path or a protected protocol channel. The manager SHOULD minimize which components can observe protected artifacts.</p>
+   <p>The manager MUST record a sanitized audit event for credential use. Audit events SHOULD identify the requester, authorized scope, destination, outcome, and relevant policy or approval identifiers when appropriate, but MUST NOT include raw credentials, approval proofs, private keys, or unfiltered protected responses. Errors and denials MUST be sanitized to avoid exposing hidden credential existence, private policy, vault internals, or cross-tenant metadata.</p>
+   <h3 class="heading settled" data-level="7.4" id="privacy-considerations"><span class="secno">7.4. </span><span class="content">Privacy and user interaction</span><a class="self-link" href="#privacy-considerations"></a></h3>
+   <p>Discovery and authorization can reveal account relationships, services, work patterns, and user identity. Implementations MUST minimize data shown to the agent and sent to a policy service. Agent-visible metadata MUST be limited to information needed for the authorized task and audience. Implementations SHOULD use opaque identifiers; avoid sending entire prompts, conversation histories, or unrelated documents; and keep requester assertions separate from trusted attributes. They SHOULD limit diagnostic access and expire task context and pending interaction state promptly.</p>
+   <p>Provider-controlled prompts SHOULD explain the requesting principal, provider, intended destination, requested operation, and security consequences in language the user can understand. Providers SHOULD support keyboard and assistive-technology access and a clear cancellation path. They MUST distinguish selection from authorization and MUST NOT describe an unverified agent-supplied purpose as enterprise-approved. v0 leaves open which operations require fresh interaction across all deployments; applicable provider or enterprise policy can require it today.</p>
+   <h2 class="heading settled" data-level="8" id="examples"><span class="secno">8. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
+   <p>These examples are informative and use illustrative domains and identifiers. They show the existing public method names; their nested request and result shapes are not a complete wire contract. The runtime supplies independently authenticated context in every example. A task identifier, credential reference, or operation identifier alone never establishes authorization.</p>
+   <h3 class="heading settled" data-level="8.1" id="example-api-credential-request"><span class="secno">8.1. </span><span class="content">Selecting a credential and making an HTTPS request</span><a class="self-link" href="#example-api-credential-request"></a></h3>
+   <p>The agent selects a credential suitable for opening an issue, then asks the provider to make the request. Selection returns a reference; it does not release the API credential or pre-approve any future use of it.</p>
+<pre class="highlight lang-js"><c- a>const</c-> taskId <c- o>=</c-> <c- u>"task_42"</c-><c- p>;</c->
+<c- a>const</c-> audience <c- o>=</c-> <c- p>{</c-> type<c- o>:</c-> <c- u>"https-origin"</c-><c- p>,</c-> origin<c- o>:</c-> <c- u>"https://api.example.com"</c-> <c- p>};</c->
+<c- a>const</c-> credential <c- o>=</c-> <c- k>await</c-> credentialManager<c- p>.</c->get<c- p>({</c->
+  taskId<c- p>,</c-> audience<c- p>,</c-> operation<c- o>:</c-> <c- u>"execute-request"</c->
+<c- p>});</c->
+<c- k>if</c-> <c- p>(</c-><c- o>!</c->credential<c- p>)</c-> <c- k>throw</c-> <c- ow>new</c-> <c- ne>Error</c-><c- p>(</c-><c- u>"No credential selected"</c-><c- p>);</c->
+
+<c- a>const</c-> result <c- o>=</c-> <c- k>await</c-> credentialManager<c- p>.</c->use<c- p>({</c->
+  taskId<c- p>,</c-> audience<c- p>,</c-> credentialId<c- o>:</c-> credential<c- p>.</c->id<c- p>,</c->
+  operation<c- o>:</c-> <c- u>"execute-request"</c-><c- p>,</c->
+  input<c- o>:</c-> <c- p>{</c->
+    method<c- o>:</c-> <c- u>"POST"</c-><c- p>,</c->
+    url<c- o>:</c-> <c- u>"https://api.example.com/repos/example/project/issues"</c-><c- p>,</c->
+    body<c- o>:</c-> <c- p>{</c-> title<c- o>:</c-> <c- u>"Investigate failed deployment"</c-> <c- p>}</c->
+  <c- p>}</c->
+<c- p>});</c->
+</pre>
+   <p>The manager checks the actual method and destination, applies policy and required verification, and attaches the credential directly to the approved request. The response might contain an issue identifier and status, but not an authorization header, cookie, or bearer token. If the connection fails after submission, the runtime reports an uncertain outcome instead of assuring the user that no issue was created.</p>
+   <h3 class="heading settled" data-level="8.2" id="example-ssh-signing"><span class="secno">8.2. </span><span class="content">SSH signing without disclosing the private key</span><a class="self-link" href="#example-ssh-signing"></a></h3>
+   <p>An agent asks to authenticate a Git operation. The provider selects an eligible key and validates the host and signing purpose; the runtime does not expose the private key to the agent.</p>
+<pre class="highlight lang-js"><c- a>const</c-> audience <c- o>=</c-> <c- p>{</c-> type<c- o>:</c-> <c- u>"ssh-host"</c-><c- p>,</c-> hostname<c- o>:</c-> <c- u>"git.example.com"</c-><c- p>,</c-> port<c- o>:</c-> <c- mf>22</c-> <c- p>};</c->
+<c- a>const</c-> credential <c- o>=</c-> <c- k>await</c-> credentialManager<c- p>.</c->get<c- p>({</c->
+  taskId<c- o>:</c-> <c- u>"task_42"</c-><c- p>,</c-> audience<c- p>,</c-> operation<c- o>:</c-> <c- u>"sign"</c->
+<c- p>});</c->
+<c- k>if</c-> <c- p>(</c-><c- o>!</c->credential<c- p>)</c-> <c- k>throw</c-> <c- ow>new</c-> <c- ne>Error</c-><c- p>(</c-><c- u>"No credential selected"</c-><c- p>);</c->
+
+<c- a>const</c-> result <c- o>=</c-> <c- k>await</c-> credentialManager<c- p>.</c->use<c- p>({</c->
+  taskId<c- o>:</c-> <c- u>"task_42"</c-><c- p>,</c-> audience<c- p>,</c-> credentialId<c- o>:</c-> credential<c- p>.</c->id<c- p>,</c->
+  operation<c- o>:</c-> <c- u>"sign"</c-><c- p>,</c->
+  input<c- o>:</c-> <c- p>{</c-> purpose<c- o>:</c-> <c- u>"ssh-authentication"</c-><c- p>,</c-> algorithm<c- o>:</c-> <c- u>"ssh-ed25519"</c-><c- p>,</c->
+           challengeReference<c- o>:</c-> <c- u>"challenge_88a1"</c-> <c- p>}</c->
+<c- p>});</c->
+</pre>
+   <p>The provider independently verifies the server host key through trusted configuration or another approved mechanism, resolves the challenge on an approved channel, and routes any authentication artifact according to protocol and policy. The example omits that plumbing; it does not authorize arbitrary signing or returning authentication material to model context.</p>
+   <h3 class="heading settled" data-level="8.3" id="example-pending-operation"><span class="secno">8.3. </span><span class="content">Checking and cancelling a pending operation</span><a class="self-link" href="#example-pending-operation"></a></h3>
+   <p>If provider verification or execution is pending, the runtime can present that fact without exposing the approval interaction. The caller can check status or ask to cancel using the original task context.</p>
+<pre class="highlight lang-js"><c- a>const</c-> status <c- o>=</c-> <c- k>await</c-> credentialManager<c- p>.</c->status<c- p>({</c->
+  taskId<c- o>:</c-> <c- u>"task_42"</c-><c- p>,</c-> resourceId<c- o>:</c-> <c- u>"operation_7"</c->
+<c- p>});</c->
+<c- c1>// After the user asks to stop:</c->
+<c- k>await</c-> credentialManager<c- p>.</c->cancel<c- p>({</c->
+  taskId<c- o>:</c-> <c- u>"task_42"</c-><c- p>,</c-> operationId<c- o>:</c-> <c- u>"operation_7"</c->
+<c- p>});</c->
+</pre>
+   <p>The runtime does not interpret the cancellation acknowledgement as proof that a submitted operation was undone. If the caller instead needs to withdraw provider-held authorization, it can request <code>revoke</code> for the authorized resource; that does not rotate a previously released secret at its issuer.</p>
+   <h2 class="heading settled" data-level="9" id="acknowledgments"><span class="secno">9. </span><span class="content">Acknowledgments</span><a class="self-link" href="#acknowledgments"></a></h2>
+   <p>The architecture is informed by the W3C Credential Management and Web Authentication specifications and the OpenID Foundation AuthZEN Authorization API. Those organizations have not adopted or endorsed this proposal.</p>
+   <div class="non-normative">
+    <h2 class="appendix heading no-num settled" id="mcp-provider-integration-profile"><span class="content">Appendix A. MCP provider integration</span><a class="self-link" href="#mcp-provider-integration-profile"></a></h2>
+    <p>This appendix is informative. A private Model Context Protocol (MCP) server <a data-link-type="biblio" href="#biblio-mcp" title="Model Context Protocol Specification">[MCP]</a> is one possible integration between a trusted runtime and a credential provider. MCP is not required by the public interface.</p>
+    <p>The runtime can connect to an enterprise-configured or otherwise trusted provider and map public credential operations to an allowlist of private provider tools. For example, <code>use</code> might map to <code>credential_manager.execute</code>. This mapping does not make provider tools available for ordinary model invocation. The common requirements for authenticating, isolating, and limiting the integration are in <a href="#requester-and-transport-authentication">§ 7.1 Requester and task authentication</a> and <a href="#provider-authorization">§ 7.2 Provider authorization and protected interaction</a>.</p>
+    <p>Provider-controlled interactions and protected results follow <a href="#provider-authorization">§ 7.2 Provider authorization and protected interaction</a> and <a href="#credential-confidentiality">§ 7.3 Credential and operation-result confidentiality</a>, including isolation from generic elicitation, transcripts, hooks, and reconnect replay. v0 does not standardize private tool names, private message schemas, or a particular MCP adapter. Another private integration can enforce the same boundaries.</p>
+   </div>
+  </main>
+<script>
+(function() {
+  "use strict";
+  var collapseSidebarText = '<span aria-hidden="true">←</span> '
+                          + '<span>Collapse Sidebar</span>';
+  var expandSidebarText   = '<span aria-hidden="true">→</span> '
+                          + '<span>Pop Out Sidebar</span>';
+  var tocJumpText         = '<span aria-hidden="true">↑</span> '
+                          + '<span>Jump to Table of Contents</span>';
+
+  var sidebarMedia = window.matchMedia('screen and (min-width: 78em)');
+  var autoToggle   = function(e){ toggleSidebar(e.matches) };
+  if(sidebarMedia.addListener) {
+    sidebarMedia.addListener(autoToggle);
+  }
+
+  function toggleSidebar(on) {
+    if (on == undefined) {
+      on = !document.body.classList.contains('toc-sidebar');
+    }
+
+    /* Don't scroll to compensate for the ToC if we're above it already. */
+    var headY = 0;
+    var head = document.querySelector('.head');
+    if (head) {
+      // terrible approx of "top of ToC"
+      headY += head.offsetTop + head.offsetHeight;
+    }
+    var skipScroll = window.scrollY < headY;
+
+    var toggle = document.getElementById('toc-toggle');
+    var tocNav = document.getElementById('toc');
+    if (on) {
+      var tocHeight = tocNav.offsetHeight;
+      document.body.classList.add('toc-sidebar');
+      document.body.classList.remove('toc-inline');
+      toggle.innerHTML = collapseSidebarText;
+      if (!skipScroll) {
+        window.scrollBy(0, 0 - tocHeight);
+      }
+      tocNav.focus();
+      sidebarMedia.addListener(autoToggle); // auto-collapse when out of room
+    }
+    else {
+      document.body.classList.add('toc-inline');
+      document.body.classList.remove('toc-sidebar');
+      toggle.innerHTML = expandSidebarText;
+      if (!skipScroll) {
+        window.scrollBy(0, tocNav.offsetHeight);
+      }
+      if (toggle.matches(':hover')) {
+        /* Unfocus button when not using keyboard navigation,
+           because I don't know where else to send the focus. */
+        toggle.blur();
+      }
+    }
+  }
+
+  function createSidebarToggle() {
+    /* Create the sidebar toggle in JS; it shouldn't exist when JS is off. */
+    var toggle = document.createElement('a');
+      /* This should probably be a button, but appearance isn't standards-track.*/
+    toggle.id = 'toc-toggle';
+    toggle.class = 'toc-toggle';
+    toggle.href = '#toc';
+    toggle.innerHTML = collapseSidebarText;
+
+    sidebarMedia.addListener(autoToggle);
+    var toggler = function(e) {
+      e.preventDefault();
+      sidebarMedia.removeListener(autoToggle); // persist explicit off states
+      toggleSidebar();
+      return false;
+    }
+    toggle.addEventListener('click', toggler, false);
+
+
+    /* Get <nav id=toc-nav>, or make it if we don't have one. */
+    var tocNav = document.getElementById('toc-nav');
+    if (!tocNav) {
+      tocNav = document.createElement('p');
+      tocNav.id = 'toc-nav';
+      /* Prepend for better keyboard navigation */
+      document.body.insertBefore(tocNav, document.body.firstChild);
+    }
+    /* While we're at it, make sure we have a Jump to Toc link. */
+    var tocJump = document.getElementById('toc-jump');
+    if (!tocJump) {
+      tocJump = document.createElement('a');
+      tocJump.id = 'toc-jump';
+      tocJump.href = '#toc';
+      tocJump.innerHTML = tocJumpText;
+      tocNav.appendChild(tocJump);
+    }
+
+    tocNav.appendChild(toggle);
+  }
+
+  var toc = document.getElementById('toc');
+  if (toc) {
+    createSidebarToggle();
+    toggleSidebar(sidebarMedia.matches);
+
+    /* If the sidebar has been manually opened and is currently overlaying the text
+       (window too small for the MQ to add the margin to body),
+       then auto-close the sidebar once you click on something in there. */
+    toc.addEventListener('click', function(e) {
+      if(e.target.tagName.toLowerCase() == "a" && document.body.classList.contains('toc-sidebar') && !sidebarMedia.matches) {
+        toggleSidebar(false);
+      }
+    }, false);
+  }
+  else {
+    console.warn("Can't find Table of Contents. Please use <nav id='toc'> around the ToC.");
+  }
+
+  /* Wrap tables in case they overflow */
+  var tables = document.querySelectorAll(':not(.overlarge) > table.data, :not(.overlarge) > table.index');
+  var numTables = tables.length;
+  for (var i = 0; i < numTables; i++) {
+    var table = tables[i];
+    var wrapper = document.createElement('div');
+    wrapper.className = 'overlarge';
+    table.parentNode.insertBefore(wrapper, table);
+    wrapper.appendChild(table);
+  }
+
+})();
+</script>
+  <h2 class="heading no-num no-ref settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="heading no-num no-ref settled" id="normative"><span class="content">Normative References</span><a class="self-link" href="#normative"></a></h3>
+  <dl>
+   <dt id="biblio-json-rpc-2">[JSON-RPC-2]
+   <dd><a href="https://www.jsonrpc.org/specification"><cite>JSON-RPC 2.0 Specification</cite></a>. URL: <a href="https://www.jsonrpc.org/specification">https://www.jsonrpc.org/specification</a>
+   <dt id="biblio-rfc2119">[RFC2119]
+   <dd>S. Bradner. <a href="https://datatracker.ietf.org/doc/html/rfc2119"><cite>Key words for use in RFCs to Indicate Requirement Levels</cite></a>. March 1997. Best Current Practice. URL: <a href="https://datatracker.ietf.org/doc/html/rfc2119">https://datatracker.ietf.org/doc/html/rfc2119</a>
+   <dt id="biblio-rfc8174">[RFC8174]
+   <dd>B. Leiba. <a href="https://www.rfc-editor.org/rfc/rfc8174"><cite>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</cite></a>. May 2017. Best Current Practice. URL: <a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>
+   <dt id="biblio-webauthn-3">[WEBAUTHN-3]
+   <dd><a href="https://www.w3.org/TR/webauthn-3/"><cite>Web Authentication: An API for accessing Public Key Credentials - Level 3</cite></a>. 25 August 2026. W3C Recommendation. URL: <a href="https://www.w3.org/TR/webauthn-3/">https://www.w3.org/TR/webauthn-3/</a>
+  </dl>
+  <h3 class="heading no-num no-ref settled" id="informative"><span class="content">Non-Normative References</span><a class="self-link" href="#informative"></a></h3>
+  <dl>
+   <dt id="biblio-authzen">[AUTHZEN]
+   <dd><a href="https://openid.net/specs/authorization-api-1_0.html"><cite>Authorization API 1.0</cite></a>. 11 January 2026. Final Specification. URL: <a href="https://openid.net/specs/authorization-api-1_0.html">https://openid.net/specs/authorization-api-1_0.html</a>
+   <dt id="biblio-credential-management-1">[CREDENTIAL-MANAGEMENT-1]
+   <dd>Nina Satragno; Marcos Caceres. <a href="https://www.w3.org/TR/credential-management-1/"><cite>Credential Management Level 1</cite></a>. 10 April 2026. WD. URL: <a href="https://www.w3.org/TR/credential-management-1/">https://www.w3.org/TR/credential-management-1/</a>
+   <dt id="biblio-mcp">[MCP]
+   <dd><a href="https://modelcontextprotocol.io/specification/2026-07-28"><cite>Model Context Protocol Specification</cite></a>. 28 July 2026. URL: <a href="https://modelcontextprotocol.io/specification/2026-07-28">https://modelcontextprotocol.io/specification/2026-07-28</a>
+   <dt id="biblio-webidl">[WEBIDL]
+   <dd>Edgar Chen; Timothy Gu. <a href="https://webidl.spec.whatwg.org/"><cite>Web IDL Standard</cite></a>. Living Standard. URL: <a href="https://webidl.spec.whatwg.org/">https://webidl.spec.whatwg.org/</a>
+  </dl>

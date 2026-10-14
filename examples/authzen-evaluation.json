@@ -1,0 +1,39 @@
+{
+  "subject": {
+    "type": "agent",
+    "id": "agent_7f2d",
+    "properties": {
+      "principal_id": "user_42",
+      "workspace_id": "workspace_acme",
+      "deployment_id": "deployment_91ab"
+    }
+  },
+  "resource": {
+    "type": "credential",
+    "id": "credential_github_enterprise_42",
+    "properties": {
+      "provider_id": "provider_enterprise_vault",
+      "credential_type": "api-key",
+      "audience": "https://api.github.com"
+    }
+  },
+  "action": {
+    "name": "credential:execute-request",
+    "properties": {
+      "method": "POST",
+      "path": "/repos/acme/payments/issues"
+    }
+  },
+  "context": {
+    "task_id": "task_01J8V8Q3KDX92N7A",
+    "run_id": "run_b81e",
+    "ticket_id": "INC-4821",
+    "purpose": "Create a tracking issue for the failed production deployment",
+    "execution_environment": "managed-enterprise-agent",
+    "context_provenance": {
+      "task_id": "platform-attested",
+      "ticket_id": "requester-asserted",
+      "purpose": "requester-asserted"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "http-response",
+  "operationId": "operation_0e31",
+  "response": {
+    "status": 201,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "number": 481,
+      "html_url": "https://github.com/acme/payments/issues/481"
+    }
+  }
+}

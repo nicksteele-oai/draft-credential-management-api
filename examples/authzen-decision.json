@@ -1,0 +1,12 @@
+{
+  "decision": true,
+  "context": {
+    "decision_id": "decision_a931",
+    "expires_at": "2026-08-19T17:05:00Z",
+    "obligations": {
+      "provider_retained": true,
+      "audit": true,
+      "max_uses": 1
+    }
+  }
+}

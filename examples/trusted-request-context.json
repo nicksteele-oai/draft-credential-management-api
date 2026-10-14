@@ -1,0 +1,11 @@
+{
+  "taskId": "task_01J8V8Q3KDX92N7A",
+  "agentId": "agent_7f2d",
+  "principalId": "user_42",
+  "workspaceId": "workspace_acme",
+  "deploymentId": "deployment_91ab",
+  "runId": "run_b81e",
+  "issuedAt": 1787162400,
+  "expiresAt": 1787162700,
+  "attestationReference": "attestation_ref_94dd"
+}

@@ -1,0 +1,38 @@
+{
+  "CREDENTIAL-MANAGEMENT": {
+    "title": "Credential Management Level 1",
+    "href": "https://www.w3.org/TR/credential-management-1/",
+    "publisher": "W3C",
+    "status": "Working Draft"
+  },
+  "WEBAUTHN-3": {
+    "title": "Web Authentication: An API for accessing Public Key Credentials Level 3",
+    "href": "https://www.w3.org/TR/webauthn-3/",
+    "publisher": "W3C"
+  },
+  "FIDO-CXF": {
+    "title": "Credential Exchange Format 1.0",
+    "href": "https://fidoalliance.org/specs/cx/cxf-v1.0-ps-errata-20260309.html",
+    "publisher": "FIDO Alliance",
+    "status": "Proposed Standard"
+  },
+  "FIDO-CXP": {
+    "title": "Credential Exchange Protocol 1.0",
+    "href": "https://fidoalliance.org/specs/cx/cxp-v1.0-wd-20241003.html",
+    "publisher": "FIDO Alliance",
+    "status": "Working Draft"
+  },
+  "AUTHZEN": {
+    "title": "Authorization API 1.0",
+    "href": "https://openid.net/specs/authorization-api-1_0.html",
+    "publisher": "OpenID Foundation",
+    "status": "Final",
+    "date": "2026-01-11"
+  },
+  "HPKE": {
+    "title": "RFC 9180: Hybrid Public Key Encryption",
+    "href": "https://www.rfc-editor.org/rfc/rfc9180",
+    "publisher": "IETF",
+    "status": "Informational"
+  }
+}

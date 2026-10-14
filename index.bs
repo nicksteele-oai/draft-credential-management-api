@@ -1,0 +1,349 @@
+<pre class=metadata>
+Title: Agent Credential Management
+Shortname: agent-credential-management
+Level: 1
+Status: DREAM
+Text Macro: LONGSTATUS Independent Discussion Draft (v0)
+Editor: Nick Steele, OpenAI
+Date: 2026-10-14
+Abstract: This discussion draft proposes a provider-neutral interface for software agents to request use of managed credentials. A credential manager keeps credentials by default, applies policy and any required user verification, and performs operations for approved destinations. A trusted runtime authenticates the requester and supplies execution context; agents work with opaque references. This v0 explains why that separation is useful, how a request is processed, and what the public interface looks like through minimal IDL and worked examples. It is not an implementation commitment or a complete wire protocol.
+Default Biblio Status: snapshot
+Boilerplate: copyright off, logo off, conformance off, index off, idl-index off
+Markup Shorthands: css no
+</pre>
+
+<div boilerplate=warning>
+<p><strong>Note to readers.</strong> This is an early, independent proposal for external discussion. It is not a working group document, an implementation commitment, or a statement of the editor’s employer’s position. It has not been adopted or endorsed by the W3C, the FIDO Alliance, or the OpenID Foundation. Requirements describe the proposed design and may change.</p>
+</div>
+
+<pre class=biblio>
+{
+  "WEBAUTHN-3": {
+    "title": "Web Authentication: An API for accessing Public Key Credentials - Level 3",
+    "href": "https://www.w3.org/TR/webauthn-3/",
+    "publisher": "W3C",
+    "status": "W3C Recommendation",
+    "date": "25 August 2026"
+  },
+  "AUTHZEN": {
+    "title": "Authorization API 1.0",
+    "href": "https://openid.net/specs/authorization-api-1_0.html",
+    "publisher": "OpenID Foundation",
+    "status": "Final Specification",
+    "date": "11 January 2026"
+  },
+  "MCP": {
+    "title": "Model Context Protocol Specification",
+    "href": "https://modelcontextprotocol.io/specification/2026-07-28",
+    "publisher": "Model Context Protocol",
+    "date": "28 July 2026"
+  },
+  "JSON-RPC-2": {
+    "title": "JSON-RPC 2.0 Specification",
+    "href": "https://www.jsonrpc.org/specification",
+    "publisher": "JSON-RPC Working Group"
+  }
+}
+</pre>
+
+Introduction {#introduction}
+============
+
+Software agents interact with APIs, remote systems, and applications that require credentials. Today, applications often put those credentials directly in a process, configuration file, environment variable, log, or model-visible tool result. Once a reusable secret is exposed, it is harder to limit where it can be used, understand who used it, or revoke a specific authorization without replacing the credential itself.
+
+This proposal separates asking to use a credential from having the credential. An agent names the operation and destination. A trusted runtime supplies authenticated requester and task context. A credential manager decides whether the request is allowed, handles any required interaction, and applies the credential on the requester’s behalf. By default, the agent receives an opaque reference or a filtered result. An optional exception for delivery of certain shared secrets is described in [[#authorized-shared-key-release]].
+
+The proposal is aimed at credential-provider and agent-runtime implementers, enterprise identity and security teams, and people evaluating consent, privacy, and accessibility. It draws on the application-facing request model of [[CREDENTIAL-MANAGEMENT-1]], the security properties of [[WEBAUTHN-3]], and the authorization vocabulary of [[AUTHZEN]]. It does not modify those standards or their public APIs. This v0 defines proposed behavioral requirements; it does not yet define complete message schemas, a mandatory transport, capability identifiers, or a conformance test suite.
+
+Why mediate credential use? {#why-this-design}
+---------------------------------------------
+
+Consider an agent asked to open an issue for a failed deployment. It needs authority to make one request to an issue tracker. It generally does not need to read the API credential, reuse it with unrelated services, or copy it into its conversation. Giving the agent a bearer credential makes those outcomes possible even if the user intended only the first. Giving it a provider-mediated operation lets the provider enforce the destination and action at the point where the credential is actually applied.
+
+The runtime and provider contribute different evidence. The runtime knows which workload, task, and principal it authenticated. The provider knows which credentials exist, where they are allowed to be used, and whether approval is necessary. An opaque reference connects the two without replacing either check: copying the reference to another task or presenting it without authenticated context does not grant access. The same separation gives the provider a place to record a bounded decision and to stop honoring an authorization when its scope ends.
+
+This is most useful when agents read untrusted content, invoke many tools, or continue work across sessions. An instruction in a webpage or tool response cannot legitimately change the provider’s approved destination or make itself proof of consent. The separation has limits: a provider-mediated action can still expose confidential downstream data, send an authorized but mistaken request, or produce an uncertain result after a timeout. Authorization, response filtering, clear approval, and accurate reporting of uncertain outcomes are still necessary. Once an explicitly released secret reaches its recipient, custody protection no longer applies to that copy.
+
+Conventions and terms {#agent-conformance}
+=========================================
+
+The key words MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL are to be interpreted as described in [[!RFC2119]] and [[!RFC8174]] when, and only when, they appear in all capitals. They express requirements of this proposal, not approval by a standards body. Examples and notes are informative.
+
+<table class=data>
+<thead><tr><th scope=col>Term<th scope=col>Meaning in this draft
+<tbody>
+<tr><td><strong>Agent client</strong><td>Software acting within a task that requests discovery or use of credentials. It is not a policy authority merely because it initiated the request.
+<tr><td><strong>Trusted runtime</strong><td>A platform component that authenticates the requester, establishes trustworthy execution context, and routes requests, protected results, and provider-controlled interactions.
+<tr><td><strong>Credential manager</strong><td>A provider that stores, accesses, or controls credential material; evaluates policy; and performs or supervises protected operations.
+<tr><td><strong>Credential owner</strong><td>The person, organization, or administrative principal that controls a credential and the policy applicable to it.
+<tr><td><strong>Task</strong><td>A bounded unit of work associated with authenticated principals and execution contexts. Its opaque identifier is a correlation handle, not proof of authorization.
+<tr><td><strong>Credential reference</strong><td>An opaque identifier plus any permitted non-sensitive metadata. It is neither the credential nor a bearer authorization to use it.
+<tr><td><strong>Audience</strong><td>The intended destination or relying party, such as an HTTPS origin, SSH host, or WebAuthn relying party. The provider verifies the effective destination.
+<tr><td><strong>Protected result</strong><td>A filtered response, public material, or opaque reference that does not expose a reusable secret or other transferable authentication material to the requester.
+</table>
+
+A policy decision point, when present, is a separate enterprise component that returns an authorization decision. The credential manager remains the enforcement point; a permit decision is one input to its decision to perform an operation.
+
+Architecture and trust {#architecture}
+======================================
+
+The proposal uses three boundaries. The agent communicates its intent to the runtime; the runtime supplies independently authenticated context to the credential manager; and the manager applies the credential only to the verified destination or separately authorizes delivery to an identified recipient. A provider can use a local vault, a remote service, or an enterprise system behind that boundary. Those deployment choices do not transfer policy or custody to the agent.
+
+The credential manager owns credential selection and matching; whether to unlock or prompt; the required verification level; the decision to approve or deny; where and how a credential is applied; what may be returned; and how authorization expires or is revoked. The common enforcement requirements are collected in [[#provider-authorization]]. Selecting an item in a user interface is not automatically authorization to use or release it.
+
+Provider and enterprise policy are cumulative where enterprise policy applies. A provider may consult a policy decision point using the subject, resource, action, and context model of [[AUTHZEN]], but v0 does not require that service or a particular policy language.
+
+How a request works {#how-a-request-works}
+------------------------------------------
+
+The following sequence describes the ordinary protected-use path. An integration may combine steps in one call, but it must preserve the trust boundaries described in this document.
+
+1. <strong>The agent states its intent.</strong> It may first call <code>getInfo</code> to learn capabilities, <code>discover</code> for eligible metadata, or <code>get</code> to select a reference. It identifies the intended audience and action; a purpose string is only explanatory.
+2. <strong>The runtime adds independent context.</strong> It authenticates the caller and supplies task and execution context over a trusted channel. The provider does not take an agent-written identity, approval, or task claim as equivalent evidence.
+3. <strong>The provider makes the decision.</strong> It resolves the reference, checks the actual destination and operation, applies credential and enterprise policy, and handles required user verification through its own channel. Denial does not reveal hidden credentials; a pending decision may return an operation identifier.
+4. <strong>The provider applies the credential.</strong> For HTTPS it can attach the credential only after checking the approved destination; for signing it can perform a purpose-bound signing operation without giving the caller the private key. Selecting a credential earlier does not waive this decision.
+5. <strong>The runtime returns a limited outcome.</strong> It delivers the permitted response or an opaque status identifier and keeps credential and approval material out of the ordinary transcript. The caller may use <code>status</code>, <code>cancel</code>, or <code>revoke</code> when applicable; cancellation cannot undo a downstream action already performed.
+
+Trust provenance and task context {#trusted-task-context}
+---------------------------------------------------------
+
+The runtime supplies independently authenticated context about the requester and task. An agent-supplied task identifier, business justification, ticket number, destination label, or approval claim is an untrusted assertion. It is not evidence that the task, approval, or business process exists.
+
+The required attributes and validation checks are specified in [[#requester-and-transport-authentication]]. v0 does not prescribe an attestation format or trust-discovery mechanism. It requires a provider to establish trust in the runtime or proof issuer before relying on that context.
+
+Credential Manager Interface {#credential-manager-interface}
+============================================================
+
+The names below identify proposed actions and expected behavior. The IDL in [[#minimal-idl]] supplies an abbreviated programming interface; exact operation payloads, capability identifiers, version negotiation, and serialized errors remain open. A runtime MAY expose a local typed interface, platform API, or remote transport. If an implementation uses JSON-RPC, it SHOULD use [[!JSON-RPC-2]] and the <code>credentialManager/</code> prefix for these same public method names.
+
+<table class=data>
+<thead><tr><th scope=col>Action<th scope=col>Proposed behavior
+<tbody>
+<tr><td><code>getInfo</code><td>Return provider identity, availability, version, and non-sensitive capabilities. It MUST NOT reveal vault contents, unlock state details that disclose private information, raw policy, or globally enumerable account identifiers.
+<tr><td><code>discover</code><td>Return policy-filtered credential references compatible with the requested audience and action. It MUST NOT provide an unscoped listing of accounts, items, credentials, or services.
+<tr><td><code>get</code><td>Select a credential for the requested audience and action, using provider-controlled interaction if needed; return an opaque reference. Selection does not authorize unrestricted use.
+<tr><td><code>use</code><td>Execute an authorized operation under provider control and return a protected result; optionally, use the distinct release path in [[#authorized-shared-key-release]].
+<tr><td><code>status</code><td>Return safe operation or authorization state to an authorized requester, subject to the same metadata-disclosure policy as other methods.
+<tr><td><code>cancel</code><td>Request that a pending operation or interaction end. Cancellation cannot guarantee that a downstream action already performed will be undone.
+<tr><td><code>revoke</code><td>Invalidate provider-controlled authority within an authorized scope. Revocation does not guarantee that an already-delivered shared secret has been invalidated by its issuer.
+</table>
+
+Credential provisioning and enrollment are outside the v0 public interface. A provider may arrange them out of band or just in time while handling <code>get</code> or <code>use</code>. Any setup remains provider-controlled and follows [[#provider-authorization]] and [[#credential-confidentiality]]; it does not introduce a model-visible secret-ingestion path. Delegation is deferred to a future extension.
+
+A request conceptually identifies the task, intended action and audience, an optional credential reference or selection hint, and operation-specific input. Purpose text and other requester-provided context may help a human or provider understand a request, but do not establish authority. [[#security-considerations]] defines the common requirements for references, authenticated context, authorization, and disclosure.
+
+Discovery and state checks can reveal metadata, so they follow the same authentication and policy requirements as protected use. If policy requires owner selection, the provider controls which choices are shown and how the owner confirms.
+
+Minimal IDL {#minimal-idl}
+--------------------------
+
+The first block lists the v0 public methods. Generic <code>object</code> types abbreviate method-specific dictionaries or results that v0 does not define in full; they are not permission to accept arbitrary authority, secrets, or policy overrides. The second block shows only the fields needed to understand a credential reference and a protected use. It omits optional metadata, detailed result variants, and transport bindings. The notation follows [[WEBIDL]]; it does not by itself prescribe a browser API or a global object.
+
+<xmp class=lang-webidl data-v0-idl>
+interface CredentialManager {
+  Promise<object> getInfo();
+  Promise<sequence<CredentialReference>> discover(object request);
+  Promise<CredentialReference?> get(object request);
+  Promise<CredentialResult> use(CredentialUseRequest request);
+  Promise<object> status(object request);
+  Promise<undefined> cancel(object request);
+  Promise<undefined> revoke(object request);
+};
+</xmp>
+
+<xmp class=lang-webidl data-v0-idl>
+dictionary CredentialReference {
+  required DOMString id;
+  required DOMString providerId;
+  required DOMString type;
+};
+dictionary CredentialUseRequest {
+  required DOMString taskId;
+  required DOMString credentialId;
+  required DOMString operation;
+  required object audience;
+  object input;
+};
+dictionary CredentialResult {
+  required DOMString kind;
+  required DOMString operationId;
+  object response;
+};
+</xmp>
+
+For example, the HTTPS and SSH operations in [[#examples]] provide different audience and <code>input</code> members. The runtime separately supplies authenticated context; it is not a field the agent fills in to prove authority. The abbreviated result is not the delivery format for a released credential: any delivery still follows [[#authorized-shared-key-release]] and goes only to the authorized recipient.
+
+A credential-backed response may identify the acting agent, workload, or effective principal when provider policy and the underlying protocol permit it. Identity information that affects authorization is subject to [[#requester-and-transport-authentication]], and authentication artifacts follow the delivery rules in [[#credential-confidentiality]]. Carrying agent information does not itself confer delegated authority. Agent-identity claim formats and delegation flows are outside v0.
+
+Lifecycle and errors {#operation-lifecycle}
+-------------------------------------------
+
+A provider MAY return an opaque operation identifier when verification or execution is pending. The runtime presents the pending state while the provider handles any required interaction under [[#provider-authorization]]. Resuming or polling an operation follows the same authentication requirements as its initial request.
+
+Retries can cause duplicate effects. A provider SHOULD distinguish a known rejection from an uncertain downstream outcome and SHOULD prevent duplicate sensitive actions where practicable. A runtime MUST NOT present a timeout, connection loss, or cancellation request as proof that an action did not happen. Common status names, idempotency keys, retry semantics, and interoperable revocation signaling remain open in v0.
+
+Providers SHOULD expose stable, sanitized error categories. The categories proposed for review are: <code>operation_not_supported</code>, <code>invalid_request</code>, <code>not_authorized</code>, <code>interaction_required</code>, <code>interaction_cancelled</code>, <code>expired_or_revoked</code>, and <code>execution_failed</code>. The disclosure rules in [[#credential-confidentiality]] apply; an implementation MAY deliberately use the same error for multiple sensitive conditions.
+
+Protected operation execution {#protected-operation-execution}
+===============================================================
+
+On <code>use</code>, the manager MUST apply [[#security-considerations]], resolve any credential reference, derive and validate the effective destination and action, and verify the credential supports the operation. The manager then performs the operation under provider control or independently authorizes delivery under [[#authorized-shared-key-release]]. It returns a protected result, an explicitly authorized release result, or a sanitized error.
+
+The requester MUST NOT be able to choose an arbitrary credential-application method or downgrade destination validation. The manager MUST reject a mismatch between declared audience and actual request, ambiguous host or URL parsing, an untrusted proxy destination, cross-origin credential propagation, or an SSH or relying-party identity mismatch. When an operation type cannot be safely bounded or its effective destination cannot be independently verified, the provider MUST reject it. Returning a filtered result does not remove the need to enforce the authority exercised at the destination.
+
+Credentials may include API credentials, passwords, passkeys, SSH keys, and one-time-password credentials, depending on provider support. The rules below apply to the corresponding operation when supported; v0 does not require every provider to support every credential type. [[#credential-confidentiality]] sets the common custody and result-filtering requirements.
+
+HTTPS requests {#https-request-execution}
+------------------------------------------
+
+For a protected HTTPS request, the manager MUST verify the effective scheme, hostname, port, method, and applicable path restriction before applying a credential. It MUST reject plaintext HTTP, ambiguous user information or host normalization, and destinations that cannot be verified against the approved audience. The manager MUST NOT forward credentials across a redirect to an unapproved origin. Redirect handling MUST preserve authorization constraints for any credentialed follow-up request.
+
+Response bodies, headers, redirect locations, and server messages can contain sensitive data even if the original credential never leaves the provider. The result-filtering requirements in [[#credential-confidentiality]] apply to every part of the HTTPS response.
+
+Authentication, passkeys, signing, and tokens {#authentication-and-passkeys}
+---------------------------------------------------------------------------
+
+An authentication operation MUST enforce its protocol-specific audience and challenge. A WebAuthn passkey operation MUST preserve the relying-party identifier, origin, challenge, user presence, and user-verification semantics required by [[!WEBAUTHN-3]]. v0 does not create a new way for a non-browser runtime to establish client or origin authority or bypass a ceremony. The agent MUST NOT receive the private key. A WebAuthn assertion MUST be delivered only through an approved protocol channel; it is not safe to put in model context simply because it is not a long-lived key.
+
+A signing operation MUST verify the key, algorithm, audience, payload format, and purpose. Implementations SHOULD use protocol-specific domain separation and reject arbitrary signing requests that could produce a valid assertion for another protocol. An SSH agent lease MUST be limited to the authorized recipient process, identities, lifetime, and revocation scope; SSH agent forwarding MUST NOT be enabled unless separately authorized by provider policy.
+
+An OTP, bearer token, refresh token, signed assertion, or other derived artifact can authorize an external action. The manager MUST treat such values as sensitive. An operation that derives or issues a token SHOULD return an opaque reference or directly execute the downstream action. It MUST NOT expose a transferable secret except through explicitly authorized release to an authenticated recipient. Provider policy may prohibit release even when a credential type technically supports it.
+
+Authorized shared-key release {#authorized-shared-key-release}
+===============================================================
+
+This is an OPTIONAL exception to provider custody. A manager MAY release a password, API key, scoped bearer token, or similar shared-secret credential only when provider policy and, in an enterprise deployment, enterprise policy explicitly authorize delivery. “Shared-key” includes passwords and bearer secrets whether or not they are cryptographic keys. A provider may omit the capability and still offer protected operations. A request to use a credential MUST NOT itself select or compel release.
+
+Before release, the manager MUST authenticate the intended recipient and verify the credential, audience, requested operation, applicable execution scope, and any required approval. It MUST explicitly distinguish release from ordinary protected results; this draft calls that result <code>released_credential</code>. Merely seeing the result type or being the caller does not make the agent or model the authorized recipient. The provider MUST NOT silently substitute release for an unsupported protected operation.
+
+The runtime MUST deliver the value only to the authorized recipient, subject to [[#credential-confidentiality]]. If the recipient is an agent or model, the credential manager and, in an enterprise deployment, the enterprise MUST explicitly authorize that recipient and exposure. Neither provider approval nor an instruction to the recipient can guarantee that a disclosed secret will not be copied or reused.
+
+Issuer-enforced scope, expiration, and revocation SHOULD limit released credentials where supported. An implementation MUST NOT claim stronger restrictions than the issuer or downstream service actually enforces. The release path MUST NOT deliver SSH private keys, passkey private keys, vault-unlock material, vault-session credentials, or other non-exportable credentials. Revoking provider authorization after release is not equivalent to rotating or invalidating the delivered secret at its issuer.
+
+Security requirements and considerations {#security-considerations}
+=================================================================
+
+These requirements apply to every public method, including discovery and status checks, and to provider-private integrations. Operation-specific requirements in [[#protected-operation-execution]] and the exception in [[#authorized-shared-key-release]] also apply.
+
+Requester and task authentication {#requester-and-transport-authentication}
+---------------------------------------------------------------------------
+
+The runtime and provider MUST authenticate one another before sending security-sensitive context. Local deployments SHOULD use owner-restricted operating-system endpoints and authenticated peers. Remote deployments MUST use authenticated, integrity-protected, confidential transport. The provider MUST identify and trust the runtime or proof issuer before accepting context.
+
+The runtime MUST authenticate the requester and supply a task identifier, authenticated agent or workload identity, and issuance and expiration times through an authenticated channel. It SHOULD supply the effective human or service principal, tenant or workspace, deployment, and execution instance where available; the provider MUST require whichever attributes its policy depends on.
+
+For every operation, including resumption and polling, the manager MUST authenticate the requester and context; match the agent-visible task identifier to the authenticated task; confirm the requester may act within that task; check expiration and applicable revocation; and bind its decision to the actual operation, credential, audience, and effective principal. It MUST reject task substitution, cross-tenant authorization, replayed or expired proofs, and conflicting or insufficiently authenticated attributes used in policy decisions. Credential references MUST be unguessable and policy-scoped. Credential references and operation identifiers MUST NOT be accepted as bearer authority.
+
+If a signed assertion or attestation is used, it SHOULD identify the issuer, requester, intended manager, task, issuance and expiration times, and a nonce or equivalent replay control. It SHOULD bind a request digest when approval is operation-specific. The manager MUST validate the issuer against configured trust and reject proofs for another manager, requester, task, audience, or operation.
+
+Provider authorization and protected interaction {#provider-authorization}
+-------------------------------------------------------------------------
+
+The provider MUST enforce credential and applicable enterprise policy, including every mandatory decision and obligation. It MUST deny an operation when a required decision is missing, invalid, expired, or cannot be enforced, and MUST derive the effective action from the actual operation rather than an agent-supplied label such as “read-only.” Unsupported operations MUST be rejected explicitly, without silent fallback to disclosure or an unprotected action.
+
+The runtime and manager MUST enforce policy, custody, and recipient routing independently of model behavior. Requester assertions and instructions in webpages, documents, messages, tool descriptions, or tool output MUST NOT establish approval, change an approved recipient or destination, or weaken policy. Purpose strings, ticket numbers, and claims about a business process MUST be independently verified when they affect a decision. The public interface MUST NOT accept parameters that assert approval, disable verification, set secret exposure, override policy, or supply a vault-unlock secret.
+
+Unlocking, authentication challenges, verification, selection, approval, and secret delivery MUST use protected provider-controlled channels. An agent acknowledgement, item selection, or generic chat message MUST NOT be treated as sufficient approval. Sensitive interactions MUST NOT pass through generic elicitation, event hooks, ordinary model-visible tool results, diagnostics, or reconnect replay. Reconnection MUST NOT replay secrets or reinterpret a prior interaction as fresh approval.
+
+Provider-private capabilities MUST remain inaccessible as ordinary model-callable tools. The runtime MUST authenticate the configured provider and restrict calls to approved credential operations. A requester-controlled adapter or an untrusted provider description MUST NOT supply policy or approval instructions. These requirements also apply to the optional integration described in [[#mcp-provider-integration-profile]].
+
+Credential and operation-result confidentiality {#credential-confidentiality}
+-----------------------------------------------------------------------------
+
+Credential material and provider-private authentication data MUST be kept out of agent-visible requests, responses, logs, telemetry, diagnostics, hooks, ordinary tool or MCP transcripts, and replay except for explicitly authorized delivery under [[#authorized-shared-key-release]]. Ordinary requests MUST NOT contain plaintext passwords, private keys, bearer or refresh tokens, vault-unlock secrets, or OTP seeds. Private keys, passkey private material, vault-unlock material, and vault-session credentials MUST NOT be delivered to agents. Disclosure permission for one named recipient does not authorize logging, diagnostic retention, or replay to another session. Raw assertions and provider-private proof SHOULD remain outside model context and agent-visible transcripts.
+
+The manager MUST treat operation results as potentially sensitive and apply an appropriate response policy before delivery. Protected results MUST omit authorization headers, cookies, token responses, and other credential material. Redirect locations, OTPs, signed assertions, server messages, and decrypted material can also carry transferable authority or confidential data; they MUST NOT be returned through a generic protected result when their delivery requires the release path or a protected protocol channel. The manager SHOULD minimize which components can observe protected artifacts.
+
+The manager MUST record a sanitized audit event for credential use. Audit events SHOULD identify the requester, authorized scope, destination, outcome, and relevant policy or approval identifiers when appropriate, but MUST NOT include raw credentials, approval proofs, private keys, or unfiltered protected responses. Errors and denials MUST be sanitized to avoid exposing hidden credential existence, private policy, vault internals, or cross-tenant metadata.
+
+Privacy and user interaction {#privacy-considerations}
+------------------------------------------------------
+
+Discovery and authorization can reveal account relationships, services, work patterns, and user identity. Implementations MUST minimize data shown to the agent and sent to a policy service. Agent-visible metadata MUST be limited to information needed for the authorized task and audience. Implementations SHOULD use opaque identifiers; avoid sending entire prompts, conversation histories, or unrelated documents; and keep requester assertions separate from trusted attributes. They SHOULD limit diagnostic access and expire task context and pending interaction state promptly.
+
+Provider-controlled prompts SHOULD explain the requesting principal, provider, intended destination, requested operation, and security consequences in language the user can understand. Providers SHOULD support keyboard and assistive-technology access and a clear cancellation path. They MUST distinguish selection from authorization and MUST NOT describe an unverified agent-supplied purpose as enterprise-approved. v0 leaves open which operations require fresh interaction across all deployments; applicable provider or enterprise policy can require it today.
+
+Examples {#examples}
+====================
+
+These examples are informative and use illustrative domains and identifiers. They show the existing public method names; their nested request and result shapes are not a complete wire contract. The runtime supplies independently authenticated context in every example. A task identifier, credential reference, or operation identifier alone never establishes authorization.
+
+Selecting a credential and making an HTTPS request {#example-api-credential-request}
+-----------------------------------------------------------------------------------
+
+The agent selects a credential suitable for opening an issue, then asks the provider to make the request. Selection returns a reference; it does not release the API credential or pre-approve any future use of it.
+
+<pre class=lang-js>
+const taskId = "task_42";
+const audience = { type: "https-origin", origin: "https://api.example.com" };
+const credential = await credentialManager.get({
+  taskId, audience, operation: "execute-request"
+});
+if (!credential) throw new Error("No credential selected");
+
+const result = await credentialManager.use({
+  taskId, audience, credentialId: credential.id,
+  operation: "execute-request",
+  input: {
+    method: "POST",
+    url: "https://api.example.com/repos/example/project/issues",
+    body: { title: "Investigate failed deployment" }
+  }
+});
+</pre>
+
+The manager checks the actual method and destination, applies policy and required verification, and attaches the credential directly to the approved request. The response might contain an issue identifier and status, but not an authorization header, cookie, or bearer token. If the connection fails after submission, the runtime reports an uncertain outcome instead of assuring the user that no issue was created.
+
+SSH signing without disclosing the private key {#example-ssh-signing}
+--------------------------------------------------------------------
+
+An agent asks to authenticate a Git operation. The provider selects an eligible key and validates the host and signing purpose; the runtime does not expose the private key to the agent.
+
+<pre class=lang-js>
+const audience = { type: "ssh-host", hostname: "git.example.com", port: 22 };
+const credential = await credentialManager.get({
+  taskId: "task_42", audience, operation: "sign"
+});
+if (!credential) throw new Error("No credential selected");
+
+const result = await credentialManager.use({
+  taskId: "task_42", audience, credentialId: credential.id,
+  operation: "sign",
+  input: { purpose: "ssh-authentication", algorithm: "ssh-ed25519",
+           challengeReference: "challenge_88a1" }
+});
+</pre>
+
+The provider independently verifies the server host key through trusted configuration or another approved mechanism, resolves the challenge on an approved channel, and routes any authentication artifact according to protocol and policy. The example omits that plumbing; it does not authorize arbitrary signing or returning authentication material to model context.
+
+Checking and cancelling a pending operation {#example-pending-operation}
+------------------------------------------------------------------------
+
+If provider verification or execution is pending, the runtime can present that fact without exposing the approval interaction. The caller can check status or ask to cancel using the original task context.
+
+<pre class=lang-js>
+const status = await credentialManager.status({
+  taskId: "task_42", resourceId: "operation_7"
+});
+// After the user asks to stop:
+await credentialManager.cancel({
+  taskId: "task_42", operationId: "operation_7"
+});
+</pre>
+
+The runtime does not interpret the cancellation acknowledgement as proof that a submitted operation was undone. If the caller instead needs to withdraw provider-held authorization, it can request <code>revoke</code> for the authorized resource; that does not rotate a previously released secret at its issuer.
+
+Acknowledgments {#acknowledgments}
+=================================
+
+The architecture is informed by the W3C Credential Management and Web Authentication specifications and the OpenID Foundation AuthZEN Authorization API. Those organizations have not adopted or endorsed this proposal.
+
+<div class="non-normative">
+<h2 class="appendix no-num" id="mcp-provider-integration-profile">Appendix A. MCP provider integration</h2>
+
+<p>This appendix is informative. A private Model Context Protocol (MCP) server [[MCP]] is one possible integration between a trusted runtime and a credential provider. MCP is not required by the public interface.</p>
+
+<p>The runtime can connect to an enterprise-configured or otherwise trusted provider and map public credential operations to an allowlist of private provider tools. For example, <code>use</code> might map to <code>credential_manager.execute</code>. This mapping does not make provider tools available for ordinary model invocation. The common requirements for authenticating, isolating, and limiting the integration are in [[#requester-and-transport-authentication]] and [[#provider-authorization]].</p>
+
+<p>Provider-controlled interactions and protected results follow [[#provider-authorization]] and [[#credential-confidentiality]], including isolation from generic elicitation, transcripts, hooks, and reconnect replay. v0 does not standardize private tool names, private message schemas, or a particular MCP adapter. Another private integration can enforce the same boundaries.</p>
+</div>
